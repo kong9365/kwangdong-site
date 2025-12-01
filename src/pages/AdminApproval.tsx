@@ -21,7 +21,10 @@ import {
   Search,
   AlertCircle,
   ArrowLeft,
+  Download,
+  QrCode,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import {
   approveVisitRequest,
   rejectVisitRequest,
@@ -41,6 +44,9 @@ interface VisitRequest {
   visit_date: string;
   end_date?: string;
   status: string;
+  created_at?: string;
+  qr_code_url?: string;
+  qr_code_data?: string;
   visitor_info?: Array<{
     visitor_name: string;
     visitor_phone: string;
@@ -57,6 +63,8 @@ export default function AdminApproval() {
   );
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [qrCodeDialogOpen, setQrCodeDialogOpen] = useState(false);
+  const [approvedRequest, setApprovedRequest] = useState<VisitRequest | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("REQUESTED");
@@ -97,8 +105,8 @@ export default function AdminApproval() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setVisitRequests(data || []);
-      setFilteredRequests(data || []);
+      setVisitRequests((data || []) as unknown as VisitRequest[]);
+      setFilteredRequests((data || []) as unknown as VisitRequest[]);
     } catch (error: any) {
       console.error("방문 요청 로드 오류:", error);
       toast({
@@ -140,7 +148,26 @@ export default function AdminApproval() {
       // 현재는 임시로 "admin" 사용
       const approvedBy = "admin";
 
-      await approveVisitRequest(request.id, approvedBy);
+      const approvedData = await approveVisitRequest(request.id, approvedBy);
+
+      // 승인된 요청 정보 다시 로드
+      const { data: updatedRequestData, error: fetchError } = await supabase
+        .from("visit_requests")
+        .select(`
+          *,
+          visitor_info (*)
+        `)
+        .eq("id", request.id)
+        .single();
+
+      if (fetchError) {
+        console.error("승인된 요청 정보 로드 오류:", fetchError);
+      } else if (updatedRequestData) {
+        setApprovedRequest({
+          ...updatedRequestData,
+          reservation_number: (updatedRequestData as any).reservation_number || request.reservation_number,
+        } as VisitRequest);
+      }
 
       // 승인 완료 문자 전송
       if (request.visitor_info && request.visitor_info.length > 0) {
@@ -157,12 +184,12 @@ export default function AdminApproval() {
 
       toast({
         title: "승인 완료",
-        description: "방문 요청이 승인되었습니다.",
+        description: "방문 요청이 승인되었습니다. QR 코드를 확인하세요.",
       });
 
       await loadVisitRequests();
-      setSelectedRequest(null);
       setDetailDialogOpen(false);
+      setQrCodeDialogOpen(true);
     } catch (error: any) {
       console.error("승인 오류:", error);
       toast({
@@ -563,6 +590,94 @@ export default function AdminApproval() {
                   반려
                 </Button>
               </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* QR Code Dialog */}
+          <Dialog open={qrCodeDialogOpen} onOpenChange={setQrCodeDialogOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <QrCode className="w-5 h-5" />
+                  QR 코드
+                </DialogTitle>
+              </DialogHeader>
+              {approvedRequest && approvedRequest.qr_code_data && (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      방문 수속 시 이 QR 코드를 스캔하세요
+                    </p>
+                    <div className="flex justify-center p-4 bg-white rounded-lg border-2 border-primary" id="qr-code-container">
+                      <QRCodeSVG
+                        value={approvedRequest.qr_code_url || `${window.location.origin}/visit/checkin?code=${encodeURIComponent(approvedRequest.qr_code_data)}`}
+                        size={256}
+                        level="H"
+                        includeMargin={true}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-4">
+                      예약번호: {approvedRequest.reservation_number}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={async () => {
+                        // QR 코드 이미지 다운로드
+                        try {
+                          const container = document.getElementById("qr-code-container");
+                          if (container) {
+                            const svg = container.querySelector("svg");
+                            if (svg) {
+                              const svgData = new XMLSerializer().serializeToString(svg);
+                              const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+                              const url = URL.createObjectURL(svgBlob);
+                              const a = document.createElement("a");
+                              a.href = url;
+                              a.download = `QR_${approvedRequest.reservation_number}.svg`;
+                              document.body.appendChild(a);
+                              a.click();
+                              document.body.removeChild(a);
+                              URL.revokeObjectURL(url);
+                              toast({
+                                title: "다운로드 완료",
+                                description: "QR 코드 이미지가 다운로드되었습니다.",
+                              });
+                            }
+                          }
+                        } catch (error) {
+                          console.error("다운로드 오류:", error);
+                          toast({
+                            title: "다운로드 실패",
+                            description: "QR 코드 이미지 다운로드 중 오류가 발생했습니다.",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      이미지 다운로드
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => {
+                        // QR 코드 링크 복사
+                        const qrUrl = approvedRequest.qr_code_url || `${window.location.origin}/visit/checkin?code=${encodeURIComponent(approvedRequest.qr_code_data)}`;
+                        navigator.clipboard.writeText(qrUrl);
+                        toast({
+                          title: "링크 복사 완료",
+                          description: "QR 코드 링크가 클립보드에 복사되었습니다.",
+                        });
+                      }}
+                    >
+                      링크 복사
+                    </Button>
+                  </div>
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>
