@@ -63,6 +63,14 @@ interface Visitor {
   safetyAgreed: boolean;
 }
 
+interface Manager {
+  id: string;
+  name: string;
+  department: string;
+  company: string;
+  phone: string;
+}
+
 const formSchema = z.object({
   purpose: z.string().min(1, "방문목적을 선택해주세요"),
   otherPurpose: z.string().optional(),
@@ -97,6 +105,7 @@ export default function ReservationForm() {
     },
   ]);
 
+  const [selectedManager, setSelectedManager] = useState<Manager | null>(null);
   const [visitorGuidelinesOpen, setVisitorGuidelinesOpen] = useState(false);
   const [safetyDialogOpen, setSafetyDialogOpen] = useState(false);
   const [managerSearchOpen, setManagerSearchOpen] = useState(false);
@@ -120,7 +129,8 @@ export default function ReservationForm() {
 
   const selectedPurpose = form.watch("purpose");
 
-  const handleManagerSelect = (manager: any) => {
+  const handleManagerSelect = (manager: Manager) => {
+    setSelectedManager(manager);
     form.setValue("manager", manager.name);
     form.setValue("department", manager.department);
   };
@@ -167,7 +177,7 @@ export default function ReservationForm() {
     setVisitors(newVisitors);
   };
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     // Validate visitors
     const hasInvalidVisitor = visitors.some(
       (v) => !v.name || !v.phone2 || !v.phone3 || !v.safetyAgreed
@@ -182,13 +192,42 @@ export default function ReservationForm() {
       return;
     }
 
-    toast({
-      title: "방문예약 신청 완료",
-      description: "담당자 승인 후 문자메시지로 안내드리겠습니다.",
-    });
+    try {
+      // Supabase에 저장
+      const { createVisitRequest } = await import("@/lib/api");
+      
+      const visitRequest = await createVisitRequest({
+        company: values.department || "",
+        department: values.department || "",
+        purpose: values.purpose === "99" ? values.otherPurpose || "" : PURPOSE_OPTIONS.find(p => p.value === values.purpose)?.label || values.purpose,
+        visit_date: format(values.startDate, "yyyy-MM-dd"),
+        end_date: values.endDate ? format(values.endDate, "yyyy-MM-dd") : undefined,
+        visitor_company: values.visitorCompany,
+        requester_id: "anonymous", // 로그인 구현 시 실제 사용자 ID 사용
+        manager_name: selectedManager?.name || values.manager || null,
+        manager_phone: selectedManager?.phone || null,
+        visitors: visitors.map((v) => ({
+          name: v.name,
+          phone: v.phone1 + v.phone2 + v.phone3,
+          carNumber: v.carNumber || undefined,
+        })),
+      });
 
-    // Navigate to completion page
-    navigate("/reservation/complete");
+      toast({
+        title: "방문예약 신청 완료",
+        description: `예약번호: ${visitRequest.reservation_number}. 담당자 승인 후 문자메시지로 안내드리겠습니다.`,
+      });
+
+      // Navigate to completion page with reservation number
+      navigate(`/reservation/complete?reservation=${visitRequest.reservation_number}`);
+    } catch (error: any) {
+      console.error("예약 신청 오류:", error);
+      toast({
+        title: "예약 신청 실패",
+        description: error.message || "예약 신청 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
