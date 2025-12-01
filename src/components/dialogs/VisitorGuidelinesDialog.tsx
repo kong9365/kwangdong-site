@@ -20,7 +20,13 @@ export function VisitorGuidelinesDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
-      <DialogContent className="max-w-md max-h-[90vh] p-0 left-[5%] translate-x-0 z-[60]">
+      <DialogContent 
+        className="max-w-md max-h-[90vh] p-0 left-[5%] translate-x-0 z-[60]"
+        onInteractOutside={(e) => {
+          // 배경 클릭 시 닫히지 않도록 방지
+          e.preventDefault();
+        }}
+      >
         <div className="flex flex-col h-full">
           <div className="border-b p-4 bg-primary text-primary-foreground">
             <h2 className="text-xl font-bold text-center">방문자 준수사항</h2>
