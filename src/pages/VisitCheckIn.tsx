@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Camera, Loader2, QrCode } from "lucide-react";
+import { CheckCircle2, XCircle, Camera, Loader2, QrCode, Link } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { decodeQRCode, checkInVisit } from "@/lib/api";
+import { decodeQRCode, checkInVisit, getVisitRequestByQRCodeId } from "@/lib/api";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 
@@ -24,6 +24,7 @@ interface QRData {
 
 export default function VisitCheckIn() {
   const [searchParams] = useSearchParams();
+  const params = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -36,15 +37,22 @@ export default function VisitCheckIn() {
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const scannerRef = useRef<any>(null);
 
-  // URL 파라미터에서 QR 코드 데이터 확인
+  // URL 파라미터에서 QR 코드 ID 확인 (/qr/:id)
   useEffect(() => {
-    const code = searchParams.get("code");
-    if (code) {
-      setQrCode(code);
-      handleDecodeQR(code);
+    const qrCodeId = params.id;
+    if (qrCodeId) {
+      handleQRCodeId(qrCodeId);
+    } else {
+      // 기존 방식: 쿼리 파라미터에서 code 확인
+      const code = searchParams.get("code");
+      if (code) {
+        setQrCode(code);
+        handleDecodeQR(code);
+      }
     }
-  }, [searchParams]);
+  }, [params.id, searchParams]);
 
   // 카메라 시작
   const startCamera = async () => {
@@ -57,6 +65,32 @@ export default function VisitCheckIn() {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         setCameraActive(true);
+        
+        // QR 코드 스캔 라이브러리 로드 (동적 import)
+        try {
+          const { BrowserQRCodeReader } = await import("@zxing/library");
+          const codeReader = new BrowserQRCodeReader();
+          
+          codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, err) => {
+            if (result) {
+              const scannedText = result.getText();
+              stopCamera();
+              handleScannedQR(scannedText);
+            }
+            if (err && err.name !== "NotFoundException") {
+              console.error("QR 코드 스캔 오류:", err);
+            }
+          });
+          
+          scannerRef.current = codeReader;
+        } catch (importError) {
+          console.error("QR 코드 라이브러리 로드 실패:", importError);
+          toast({
+            title: "QR 코드 스캔 기능을 사용할 수 없습니다",
+            description: "수동으로 QR 코드를 입력해주세요.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (err: any) {
       console.error("카메라 접근 실패:", err);
@@ -70,6 +104,10 @@ export default function VisitCheckIn() {
 
   // 카메라 중지
   const stopCamera = () => {
+    if (scannerRef.current) {
+      scannerRef.current.reset();
+      scannerRef.current = null;
+    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
@@ -80,7 +118,34 @@ export default function VisitCheckIn() {
     setCameraActive(false);
   };
 
-  // QR 코드 디코딩
+  // QR 코드 ID로 예약 정보 조회 (새로운 방식)
+  const handleQRCodeId = async (qrCodeId: string) => {
+    if (!qrCodeId.trim()) {
+      setError("QR 코드 ID를 입력해주세요.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { qrData, visitRequest: request } = await getVisitRequestByQRCodeId(qrCodeId);
+      setVisitRequest(request);
+      setQrCode(qrCodeId);
+    } catch (err: any) {
+      setError(err.message || "QR 코드 조회 실패");
+      setVisitRequest(null);
+      toast({
+        title: "QR 코드 오류",
+        description: err.message || "QR 코드를 확인할 수 없습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // QR 코드 디코딩 (기존 방식 - 하위 호환성)
   const handleDecodeQR = async (code: string) => {
     if (!code.trim()) {
       setError("QR 코드 데이터를 입력해주세요.");
@@ -107,9 +172,58 @@ export default function VisitCheckIn() {
     }
   };
 
-  // 수동 입력 처리
-  const handleManualInput = () => {
-    handleDecodeQR(qrCode);
+  // QR 코드 링크에서 ID 추출
+  const extractQRCodeIdFromLink = (link: string): string | null => {
+    try {
+      // /qr/{id} 형식 추출
+      const qrMatch = link.match(/\/qr\/([a-f0-9-]{36})/i);
+      if (qrMatch) {
+        return qrMatch[1];
+      }
+      
+      // 전체 URL에서 도메인 제거 후 추출
+      const url = new URL(link.startsWith('http') ? link : `https://${link}`);
+      const pathMatch = url.pathname.match(/\/qr\/([a-f0-9-]{36})/i);
+      if (pathMatch) {
+        return pathMatch[1];
+      }
+      
+      return null;
+    } catch {
+      // URL이 아닌 경우 UUID 형식인지 확인
+      const uuidMatch = link.match(/^[a-f0-9-]{36}$/i);
+      if (uuidMatch) {
+        return uuidMatch[0];
+      }
+      return null;
+    }
+  };
+
+  // 스캔된 QR 코드 처리
+  const handleScannedQR = (scannedText: string) => {
+    const qrCodeId = extractQRCodeIdFromLink(scannedText);
+    if (qrCodeId) {
+      handleQRCodeId(qrCodeId);
+    } else {
+      // 기존 방식 시도
+      handleDecodeQR(scannedText);
+    }
+  };
+
+  // 입력값 처리 (링크 또는 ID)
+  const handleInput = () => {
+    if (!qrCode.trim()) {
+      setError("QR 코드 링크 또는 ID를 입력해주세요.");
+      return;
+    }
+
+    const qrCodeId = extractQRCodeIdFromLink(qrCode);
+    if (qrCodeId) {
+      handleQRCodeId(qrCodeId);
+    } else {
+      // 기존 방식 시도
+      handleDecodeQR(qrCode);
+    }
   };
 
   // 체크인 처리
@@ -165,7 +279,7 @@ export default function VisitCheckIn() {
             {/* 제목 */}
             <div className="text-center">
               <h1 className="text-3xl font-bold mb-2">방문 수속</h1>
-              <p className="text-muted-foreground">QR 코드를 스캔하거나 입력해주세요</p>
+              <p className="text-muted-foreground">QR 코드 링크를 입력하거나 카메라로 스캔해주세요</p>
             </div>
 
             {/* QR 코드 입력 */}
@@ -180,29 +294,32 @@ export default function VisitCheckIn() {
                 <div className="space-y-4">
                   <div className="flex gap-2">
                     <Input
-                      placeholder="QR 코드 데이터를 입력하거나 스캔하세요"
+                      placeholder="QR 코드 링크 (예: /qr/xxx-xxx-xxx) 또는 QR 코드 ID를 입력하세요"
                       value={qrCode}
                       onChange={(e) => setQrCode(e.target.value)}
                       onKeyPress={(e) => {
                         if (e.key === "Enter") {
-                          handleManualInput();
+                          handleInput();
                         }
                       }}
                       className="flex-1"
                     />
-                    <Button onClick={handleManualInput} disabled={loading || !qrCode.trim()}>
+                    <Button onClick={handleInput} disabled={loading || !qrCode.trim()}>
                       {loading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
-                        "확인"
+                        <>
+                          <Link className="w-4 h-4 mr-2" />
+                          확인
+                        </>
                       )}
                     </Button>
                   </div>
 
-                  {/* 카메라 스캔 (추후 구현) */}
+                  {/* 카메라 스캔 */}
                   <div className="border-t pt-4">
                     <p className="text-sm text-muted-foreground mb-2">
-                      카메라로 QR 코드를 스캔하려면 아래 버튼을 클릭하세요.
+                      카메라로 QR 코드 이미지를 스캔하려면 아래 버튼을 클릭하세요.
                     </p>
                     <Button
                       variant="outline"

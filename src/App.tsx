@@ -32,6 +32,7 @@ const App = () => (
           <Route path="/progress" element={<ProgressView />} />
           <Route path="/progress/view" element={<ProgressView />} />
           <Route path="/visit/checkin" element={<VisitCheckIn />} />
+          <Route path="/qr/:id" element={<VisitCheckIn />} />
           <Route path="/employee" element={<EmployeeDashboard />} />
           <Route path="/admin/approval" element={<AdminApproval />} />
           <Route path="/notice" element={<Notice />} />

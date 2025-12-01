@@ -45,6 +45,7 @@ interface VisitRequest {
   end_date?: string;
   status: string;
   created_at?: string;
+  qr_code_id?: string;
   qr_code_url?: string;
   qr_code_data?: string;
   visitor_info?: Array<{
@@ -628,7 +629,7 @@ export default function AdminApproval() {
                     </p>
                     <div className="flex justify-center p-4 bg-white rounded-lg border-2 border-primary" id="qr-code-container">
                       <QRCodeSVG
-                        value={approvedRequest.qr_code_url || `${window.location.origin}/visit/checkin?code=${encodeURIComponent(approvedRequest.qr_code_data)}`}
+                        value={approvedRequest.qr_code_url || (approvedRequest.qr_code_id ? `${window.location.origin}/qr/${approvedRequest.qr_code_id}` : `${window.location.origin}/visit/checkin?code=${encodeURIComponent(approvedRequest.qr_code_data || "")}`)}
                         size={256}
                         level="H"
                         includeMargin={true}

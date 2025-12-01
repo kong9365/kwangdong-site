@@ -281,8 +281,11 @@ export async function approveVisitRequest(id: string, approvedBy: string) {
   // QR 코드 데이터 생성
   const qrCodeData = await generateQRCodeData(visitRequest);
   
-  // QR 코드 URL 생성 (추후 실제 QR 코드 이미지 생성 시 사용)
-  const qrCodeUrl = `/visit/checkin?code=${encodeURIComponent(qrCodeData)}`;
+  // QR 코드 ID 생성 (UUID)
+  const qrCodeId = crypto.randomUUID();
+  
+  // QR 코드 URL 생성 (한미제약 방식: /qr/{uuid})
+  const qrCodeUrl = `${window.location.origin}/qr/${qrCodeId}`;
 
   // 승인 처리 및 QR 코드 저장
   const { data, error } = await supabase
@@ -292,11 +295,12 @@ export async function approveVisitRequest(id: string, approvedBy: string) {
       approved_by: approvedBy,
       approved_at: new Date().toISOString(),
       qr_code_data: qrCodeData,
+      qr_code_id: qrCodeId,
       qr_code_url: qrCodeUrl,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
-    .select("id, status, approved_by, approved_at, qr_code_data, qr_code_url")
+    .select("id, status, approved_by, approved_at, qr_code_data, qr_code_id, qr_code_url")
     .maybeSingle();
 
   if (error) {
@@ -337,7 +341,41 @@ export async function rejectVisitRequest(
   return data;
 }
 
-// QR 코드 디코딩 및 검증
+// QR 코드 ID로 예약 정보 조회 (새로운 방식)
+export async function getVisitRequestByQRCodeId(qrCodeId: string) {
+  const { data: visitRequest, error } = await supabase
+    .from("visit_requests")
+    .select(`
+      *,
+      visitor_info (*),
+      checklists (*)
+    `)
+    .eq("qr_code_id", qrCodeId)
+    .single();
+  
+  if (error) {
+    throw new Error("예약 정보를 찾을 수 없습니다.");
+  }
+  
+  if (!visitRequest || visitRequest.status !== "APPROVED") {
+    throw new Error("승인되지 않은 예약이거나 유효하지 않은 QR 코드입니다.");
+  }
+  
+  // QR 코드 데이터 생성 (하위 호환성)
+  const qrData = {
+    reservation_number: visitRequest.reservation_number,
+    visitor_name: visitRequest.visitor_info?.[0]?.visitor_name || "",
+    visit_date: visitRequest.visit_date,
+    purpose: visitRequest.purpose,
+    manager_name: visitRequest.manager_name || "",
+    company: visitRequest.company,
+    department: visitRequest.department,
+  };
+  
+  return { qrData, visitRequest };
+}
+
+// QR 코드 디코딩 및 검증 (기존 방식 - 하위 호환성)
 export async function decodeQRCode(encryptedData: string) {
   try {
     // Base64 디코딩
