@@ -196,19 +196,8 @@ export default function ReservationForm() {
       // Supabase에 저장
       const { createVisitRequest } = await import("@/lib/api");
       
-<<<<<<< HEAD
-      const phone = visitors[0].phone1 + visitors[0].phone2 + visitors[0].phone3;
-      
       const visitRequest = await createVisitRequest({
         company: values.visitorCompany,
-        department: values.department || "",
-        purpose: values.purpose === "99" ? values.otherPurpose || "" : values.purpose,
-        visit_date: format(values.startDate, "yyyy-MM-dd"),
-        end_date: values.endDate ? format(values.endDate, "yyyy-MM-dd") : undefined,
-        requester_id: "anonymous", // 로그인 구현 시 실제 사용자 ID 사용
-=======
-      const visitRequest = await createVisitRequest({
-        company: values.department || "",
         department: values.department || "",
         purpose: values.purpose === "99" ? values.otherPurpose || "" : PURPOSE_OPTIONS.find(p => p.value === values.purpose)?.label || values.purpose,
         visit_date: format(values.startDate, "yyyy-MM-dd"),
@@ -217,7 +206,6 @@ export default function ReservationForm() {
         requester_id: "anonymous", // 로그인 구현 시 실제 사용자 ID 사용
         manager_name: selectedManager?.name || values.manager || null,
         manager_phone: selectedManager?.phone || null,
->>>>>>> af33fb953dced0320827a0fa328f843d846f7ecc
         visitors: visitors.map((v) => ({
           name: v.name,
           phone: v.phone1 + v.phone2 + v.phone3,
