@@ -136,19 +136,11 @@ export default function AdminApproval() {
 
   const handleApprove = async (request: VisitRequest) => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      // 향후 로그인 기능 구현 시 실제 사용자 ID 사용
+      // 현재는 임시로 "admin" 사용
+      const approvedBy = "admin";
 
-      if (!user) {
-        toast({
-          title: "로그인이 필요합니다",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      await approveVisitRequest(request.id, user.id);
+      await approveVisitRequest(request.id, approvedBy);
 
       // 승인 완료 문자 전송
       if (request.visitor_info && request.visitor_info.length > 0) {
@@ -191,19 +183,11 @@ export default function AdminApproval() {
     }
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      // 향후 로그인 기능 구현 시 실제 사용자 ID 사용
+      // 현재는 임시로 "admin" 사용
+      const rejectedBy = "admin";
 
-      if (!user) {
-        toast({
-          title: "로그인이 필요합니다",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      await rejectVisitRequest(selectedRequest.id, user.id, rejectReason);
+      await rejectVisitRequest(selectedRequest.id, rejectedBy, rejectReason);
 
       // 반려 완료 문자 전송
       if (
