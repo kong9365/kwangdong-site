@@ -19,9 +19,9 @@ export function VisitorGuidelinesDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
+    <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
       <DialogContent 
-        className="max-w-md max-h-[90vh] p-0 left-[5%] translate-x-0 z-[60]"
+        className="max-w-md max-h-[90vh] p-0 left-[50%] translate-x-[-50%] translate-y-[-50%] top-[50%] z-[60]"
         onInteractOutside={(e) => {
           // 배경 클릭 시 닫히지 않도록 방지
           e.preventDefault();
@@ -74,31 +74,6 @@ export function VisitorGuidelinesDialog({
                     <p>현장의 설비나 자재, 원료 등을 허가 없이 접촉해서는 안됩니다.</p>
                   </li>
                 </ul>
-              </div>
-
-              {/* 주차장 안내 이미지 영역 */}
-              <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-                <div className="text-center mb-3">
-                  <span className="inline-block px-3 py-1 bg-primary text-primary-foreground rounded text-sm font-semibold">
-                    주차장
-                  </span>
-                </div>
-                <div className="bg-white rounded p-3 mb-3">
-                  {/* 주차장 다이어그램 텍스트 표현 */}
-                  <div className="text-center space-y-2 text-xs">
-                    <div className="flex justify-around items-center">
-                      <div className="bg-green-100 px-3 py-2 rounded">물류관리동</div>
-                      <div className="bg-blue-100 px-3 py-2 rounded">주차장</div>
-                    </div>
-                    <div className="flex justify-center">
-                      <div className="bg-red-100 px-4 py-2 rounded">← 출입관리소</div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="bg-gray-100 px-3 py-2 rounded text-center">1공장</div>
-                      <div className="bg-gray-100 px-3 py-2 rounded text-center">2공장</div>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* 주차 및 출입관련 문의 */}
