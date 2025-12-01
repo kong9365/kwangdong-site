@@ -31,7 +31,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-                광동그룹 방문예약
+                광동제약 공장 방문예약
               </h1>
               <p className="text-lg text-muted-foreground">
                 방문예약시스템에 오신 것을 환영합니다.
