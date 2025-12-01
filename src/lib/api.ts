@@ -296,12 +296,15 @@ export async function approveVisitRequest(id: string, approvedBy: string) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
-    .select()
+    .select("id, status, approved_by, approved_at, qr_code_data, qr_code_url")
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {
+    console.error("승인 처리 오류:", error);
+    throw new Error(`승인 처리 중 오류가 발생했습니다: ${error.message}`);
+  }
   if (!data) {
-    throw new Error("승인 처리 후 데이터를 찾을 수 없습니다.");
+    throw new Error("승인 처리 후 데이터를 찾을 수 없습니다. RLS 정책을 확인해주세요.");
   }
   return data;
 }
@@ -321,12 +324,15 @@ export async function rejectVisitRequest(
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
-    .select()
+    .select("id, status, approved_by, rejection_reason")
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {
+    console.error("반려 처리 오류:", error);
+    throw new Error(`반려 처리 중 오류가 발생했습니다: ${error.message}`);
+  }
   if (!data) {
-    throw new Error("반려 처리 후 데이터를 찾을 수 없습니다.");
+    throw new Error("반려 처리 후 데이터를 찾을 수 없습니다. RLS 정책을 확인해주세요.");
   }
   return data;
 }
