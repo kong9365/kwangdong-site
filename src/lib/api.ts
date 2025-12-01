@@ -41,6 +41,27 @@ export async function searchVisitRequestByPhone(phone: string) {
   return data;
 }
 
+// 담당자 목록 조회
+export async function getManagers(searchName?: string, searchDept?: string) {
+  let query = supabase
+    .from("managers")
+    .select("*")
+    .eq("is_active", true);
+
+  if (searchName) {
+    query = query.ilike("name", `%${searchName}%`);
+  }
+
+  if (searchDept) {
+    query = query.ilike("department", `%${searchDept}%`);
+  }
+
+  const { data, error } = await query.order("name", { ascending: true });
+
+  if (error) throw error;
+  return data;
+}
+
 // 방문 요청 생성
 export async function createVisitRequest(
   request: VisitRequestInsert & {
