@@ -297,9 +297,12 @@ export async function approveVisitRequest(id: string, approvedBy: string) {
     })
     .eq("id", id)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
+  if (!data) {
+    throw new Error("승인 처리 후 데이터를 찾을 수 없습니다.");
+  }
   return data;
 }
 
@@ -319,9 +322,12 @@ export async function rejectVisitRequest(
     })
     .eq("id", id)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
+  if (!data) {
+    throw new Error("반려 처리 후 데이터를 찾을 수 없습니다.");
+  }
   return data;
 }
 
