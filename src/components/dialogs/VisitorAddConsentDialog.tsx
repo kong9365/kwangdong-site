@@ -26,7 +26,13 @@ export function VisitorAddConsentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] p-0">
+      <DialogContent 
+        className="max-w-lg max-h-[90vh] p-0"
+        onInteractOutside={(e) => {
+          // 배경 클릭 시 닫히지 않도록 방지
+          e.preventDefault();
+        }}
+      >
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="bg-primary text-primary-foreground p-4 flex items-center justify-between">
