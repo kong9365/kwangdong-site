@@ -9,6 +9,7 @@ import ReservationForm from "./pages/ReservationForm";
 import ReservationComplete from "./pages/ReservationComplete";
 import Index from "./pages/Index";
 import ProgressView from "./pages/ProgressView";
+import VisitCheckIn from "./pages/VisitCheckIn";
 import AdminApproval from "./pages/AdminApproval";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import Notice from "./pages/Notice";
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/reservation/complete" element={<ReservationComplete />} />
           <Route path="/progress" element={<ProgressView />} />
           <Route path="/progress/view" element={<ProgressView />} />
+          <Route path="/visit/checkin" element={<VisitCheckIn />} />
           <Route path="/employee" element={<EmployeeDashboard />} />
           <Route path="/admin/approval" element={<AdminApproval />} />
           <Route path="/notice" element={<Notice />} />

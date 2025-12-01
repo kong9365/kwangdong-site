@@ -5,6 +5,38 @@ type VisitRequest = Database["public"]["Tables"]["visit_requests"]["Row"];
 type VisitRequestInsert = Database["public"]["Tables"]["visit_requests"]["Insert"];
 type VisitRequestUpdate = Database["public"]["Tables"]["visit_requests"]["Update"];
 
+// 5자리 예약번호 생성 (중복 체크)
+async function generateReservationNumber(): Promise<string> {
+  const maxAttempts = 10;
+  
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    // 1~99999 범위에서 랜덤 생성
+    const randomNum = Math.floor(Math.random() * 99999) + 1;
+    const reservationNumber = randomNum.toString().padStart(5, '0');
+    
+    // 중복 체크
+    const { data, error } = await supabase
+      .from("visit_requests")
+      .select("id")
+      .eq("reservation_number", reservationNumber)
+      .single();
+    
+    // 에러가 있고 데이터가 없으면 중복이 아님 (사용 가능)
+    if (error && error.code === 'PGRST116') {
+      return reservationNumber;
+    }
+    
+    // 데이터가 있으면 중복 (다시 시도)
+    if (data) {
+      continue;
+    }
+  }
+  
+  // 최대 시도 횟수 초과 시 타임스탬프 기반 생성
+  const timestamp = Date.now().toString().slice(-5);
+  return timestamp.padStart(5, '0');
+}
+
 // 예약번호로 방문 요청 검색
 export async function searchVisitRequestByReservationNumber(
   reservationNumber: string
@@ -21,6 +53,45 @@ export async function searchVisitRequestByReservationNumber(
 
   if (error) throw error;
   return data;
+}
+
+// 방문자명, 전화번호, 예약번호로 방문 요청 검색 (3개 필드 모두 필요)
+export async function searchVisitRequests(
+  visitorName: string,
+  phone: string,
+  reservationNumber: string
+) {
+  // 전화번호 정규화 (하이픈 제거)
+  const normalizedPhone = phone.replace(/-/g, "");
+  
+  // 방문자명은 정확 일치
+  // 전화번호와 예약번호로 먼저 visit_requests를 필터링
+  const { data: visitRequests, error: visitError } = await supabase
+    .from("visit_requests")
+    .select(`
+      *,
+      visitor_info (*),
+      checklists (*)
+    `)
+    .eq("reservation_number", reservationNumber);
+
+  if (visitError) throw visitError;
+  if (!visitRequests || visitRequests.length === 0) {
+    return [];
+  }
+
+  // 방문자 정보에서 이름과 전화번호로 필터링
+  const filtered = visitRequests.filter((vr: any) => {
+    if (!vr.visitor_info || vr.visitor_info.length === 0) return false;
+    
+    return vr.visitor_info.some((visitor: any) => {
+      const nameMatch = visitor.visitor_name === visitorName;
+      const phoneMatch = visitor.visitor_phone === normalizedPhone;
+      return nameMatch && phoneMatch;
+    });
+  });
+
+  return filtered;
 }
 
 // 연락처로 방문 요청 검색
@@ -41,6 +112,27 @@ export async function searchVisitRequestByPhone(phone: string) {
   return data;
 }
 
+// 담당자 목록 조회
+export async function getManagers(searchName?: string, searchDept?: string) {
+  let query = supabase
+    .from("managers")
+    .select("*")
+    .eq("is_active", true);
+
+  if (searchName) {
+    query = query.ilike("name", `%${searchName}%`);
+  }
+
+  if (searchDept) {
+    query = query.ilike("department", `%${searchDept}%`);
+  }
+
+  const { data, error } = await query.order("name", { ascending: true });
+
+  if (error) throw error;
+  return data;
+}
+
 // 방문 요청 생성
 export async function createVisitRequest(
   request: VisitRequestInsert & {
@@ -50,28 +142,26 @@ export async function createVisitRequest(
       carNumber?: string;
       email?: string;
     }>;
+    manager_name?: string | null;
+    manager_phone?: string | null;
   }
 ) {
-  // 예약번호 생성 (함수가 없으면 직접 생성)
-  let reservationNumber: string;
-  try {
-    const { data: reservationNumberData, error: numberError } = await (supabase as any)
-      .rpc("generate_reservation_number");
-
-    if (numberError) throw numberError;
-    reservationNumber = (reservationNumberData as string) || `VR-${new Date().getFullYear()}-${Date.now()}`;
-  } catch (error) {
-    // 함수가 없으면 직접 생성
-    const year = new Date().getFullYear();
-    const timestamp = Date.now();
-    reservationNumber = `VR-${year}-${timestamp.toString().slice(-6)}`;
-  }
+  // 5자리 예약번호 생성
+  const reservationNumber = await generateReservationNumber();
 
   // 방문 요청 생성
   const { data: visitRequest, error: requestError } = await supabase
     .from("visit_requests")
     .insert({
-      ...request,
+      company: request.company,
+      department: request.department,
+      purpose: request.purpose,
+      visit_date: request.visit_date,
+      end_date: request.end_date || null,
+      visitor_company: request.visitor_company || null,
+      requester_id: request.requester_id,
+      manager_name: request.manager_name || null,
+      manager_phone: request.manager_phone || null,
       reservation_number: reservationNumber,
       status: "REQUESTED",
     })
@@ -142,6 +232,139 @@ export async function cancelVisitRequest(id: string, reason?: string) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// QR 코드 데이터 생성 (암호화)
+async function generateQRCodeData(visitRequest: any): Promise<string> {
+  // 암호화 키 (환경 변수에서 가져오기)
+  const encryptionKey = import.meta.env.VITE_QR_ENCRYPTION_KEY || "default-key-change-in-production";
+  
+  // QR 코드에 포함할 데이터
+  const qrData = {
+    reservation_number: visitRequest.reservation_number,
+    visitor_name: visitRequest.visitor_info?.[0]?.visitor_name || "",
+    visit_date: visitRequest.visit_date,
+    purpose: visitRequest.purpose,
+    manager_name: visitRequest.manager_name || "",
+    company: visitRequest.company,
+    department: visitRequest.department,
+  };
+  
+  // 간단한 Base64 인코딩 (실제로는 더 강력한 암호화 사용 권장)
+  // 프로덕션에서는 AES 암호화 등을 사용해야 함
+  const jsonString = JSON.stringify(qrData);
+  const encoded = btoa(unescape(encodeURIComponent(jsonString)));
+  
+  return encoded;
+}
+
+// 방문 요청 승인 (관리자용) - QR 코드 자동 생성
+export async function approveVisitRequest(id: string, approvedBy: string) {
+  // 먼저 방문 요청 정보 가져오기
+  const { data: visitRequest, error: fetchError } = await supabase
+    .from("visit_requests")
+    .select(`
+      *,
+      visitor_info (*),
+      checklists (*)
+    `)
+    .eq("id", id)
+    .single();
+
+  if (fetchError) throw fetchError;
+
+  // QR 코드 데이터 생성
+  const qrCodeData = await generateQRCodeData(visitRequest);
+  
+  // QR 코드 URL 생성 (추후 실제 QR 코드 이미지 생성 시 사용)
+  const qrCodeUrl = `/visit/checkin?code=${encodeURIComponent(qrCodeData)}`;
+
+  // 승인 처리 및 QR 코드 저장
+  const { data, error } = await supabase
+    .from("visit_requests")
+    .update({
+      status: "APPROVED",
+      approved_by: approvedBy,
+      approved_at: new Date().toISOString(),
+      qr_code_data: qrCodeData,
+      qr_code_url: qrCodeUrl,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// 방문 요청 반려 (관리자용)
+export async function rejectVisitRequest(
+  id: string,
+  approvedBy: string,
+  reason: string
+) {
+  const { data, error } = await supabase
+    .from("visit_requests")
+    .update({
+      status: "REJECTED",
+      approved_by: approvedBy,
+      rejection_reason: reason,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// QR 코드 디코딩 및 검증
+export async function decodeQRCode(encryptedData: string) {
+  try {
+    // Base64 디코딩
+    const decoded = decodeURIComponent(escape(atob(encryptedData)));
+    const qrData = JSON.parse(decoded);
+    
+    // 예약 정보 확인
+    const { data: visitRequest, error } = await supabase
+      .from("visit_requests")
+      .select(`
+        *,
+        visitor_info (*),
+        checklists (*)
+      `)
+      .eq("reservation_number", qrData.reservation_number)
+      .single();
+    
+    if (error) throw new Error("예약 정보를 찾을 수 없습니다.");
+    
+    // QR 코드 데이터와 일치하는지 확인
+    if (visitRequest.qr_code_data !== encryptedData) {
+      throw new Error("유효하지 않은 QR 코드입니다.");
+    }
+    
+    return { qrData, visitRequest };
+  } catch (error: any) {
+    throw new Error("QR 코드 디코딩 실패: " + error.message);
+  }
+}
+
+// 방문 체크인 처리
+export async function checkInVisit(reservationNumber: string) {
+  const { data, error } = await supabase
+    .from("visit_requests")
+    .update({
+      checked_in_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("reservation_number", reservationNumber)
     .select()
     .single();
 
@@ -303,46 +526,6 @@ export async function deleteFAQ(id: string) {
   if (error) throw error;
 }
 
-// 방문 요청 승인 (관리자용)
-export async function approveVisitRequest(id: string, approvedBy: string) {
-  const { data, error } = await supabase
-    .from("visit_requests")
-    .update({
-      status: "APPROVED",
-      approved_by: approvedBy,
-      approved_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
-// 방문 요청 반려 (관리자용)
-export async function rejectVisitRequest(
-  id: string,
-  approvedBy: string,
-  reason: string
-) {
-  const { data, error } = await supabase
-    .from("visit_requests")
-    .update({
-      status: "REJECTED",
-      approved_by: approvedBy,
-      rejection_reason: reason,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
 // 문자 알림 전송 (Supabase Edge Function 호출 또는 외부 API)
 export async function sendSMSNotification(
   visitRequestId: string,
@@ -408,4 +591,3 @@ export async function sendSMSNotification(
     return { success: false, logId: logData.id, error: error.message };
   }
 }
-

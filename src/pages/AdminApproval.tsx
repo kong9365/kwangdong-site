@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,7 @@ import {
   Clock,
   Search,
   AlertCircle,
+  ArrowLeft,
 } from "lucide-react";
 import {
   approveVisitRequest,
@@ -48,11 +49,13 @@ interface VisitRequest {
 
 export default function AdminApproval() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [visitRequests, setVisitRequests] = useState<VisitRequest[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<VisitRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<VisitRequest | null>(
     null
   );
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,16 +67,19 @@ export default function AdminApproval() {
     loadVisitRequests();
   }, []);
 
-  // URL 파라미터에서 특정 예약 ID 가져오기
+  // URL 파라미터로 예약 ID가 있으면 자동 선택
   useEffect(() => {
     const requestId = searchParams.get("id");
     if (requestId && visitRequests.length > 0) {
       const request = visitRequests.find((r) => r.id === requestId);
       if (request) {
         setSelectedRequest(request);
+        setDetailDialogOpen(true);
+        // URL에서 id 파라미터 제거
+        navigate("/admin/approval", { replace: true });
       }
     }
-  }, [searchParams, visitRequests]);
+  }, [visitRequests, searchParams, navigate]);
 
   useEffect(() => {
     filterRequests();
@@ -164,6 +170,7 @@ export default function AdminApproval() {
 
       await loadVisitRequests();
       setSelectedRequest(null);
+      setDetailDialogOpen(false);
     } catch (error: any) {
       console.error("승인 오류:", error);
       toast({
@@ -226,6 +233,7 @@ export default function AdminApproval() {
       setRejectDialogOpen(false);
       setRejectReason("");
       setSelectedRequest(null);
+      setDetailDialogOpen(false);
     } catch (error: any) {
       console.error("반려 오류:", error);
       toast({
@@ -269,6 +277,17 @@ export default function AdminApproval() {
       <main className="flex-1 py-8 sm:py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6">
+            <div className="flex items-center gap-4 mb-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/employee")}
+                className="gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                임직원모드로 돌아가기
+              </Button>
+            </div>
             <h1 className="text-3xl font-bold mb-2">관리자 승인</h1>
             <p className="text-muted-foreground">
               방문 예약 요청을 승인하거나 반려할 수 있습니다.
@@ -332,7 +351,10 @@ export default function AdminApproval() {
                 <Card
                   key={request.id}
                   className="cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => setSelectedRequest(request)}
+                  onClick={() => {
+                    setSelectedRequest(request);
+                    setDetailDialogOpen(true);
+                  }}
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -401,101 +423,124 @@ export default function AdminApproval() {
           )}
 
           {/* Detail Dialog */}
-          <Dialog
-            open={selectedRequest !== null && !rejectDialogOpen}
-            onOpenChange={(open) => {
-              if (!open) setSelectedRequest(null);
-            }}
-          >
-            <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>방문 예약 상세 정보</DialogTitle>
               </DialogHeader>
               {selectedRequest && (
-                <div className="space-y-4">
+                <div className="space-y-6">
+                  {/* 기본 정보 */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">예약번호</p>
-                      <p className="font-mono">{selectedRequest.reservation_number}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">상태</p>
-                      {getStatusBadge(selectedRequest.status)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">소속회사</p>
-                      <p>{selectedRequest.company}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">부서</p>
-                      <p>{selectedRequest.department}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">방문일</p>
-                      <p>
-                        {format(new Date(selectedRequest.visit_date), "yyyy년 M월 d일", { locale: ko })}
-                        {selectedRequest.end_date &&
-                          ` ~ ${format(new Date(selectedRequest.end_date), "yyyy년 M월 d일", { locale: ko })}`}
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        예약번호
+                      </p>
+                      <p className="font-mono font-semibold">
+                        {selectedRequest.reservation_number}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">방문목적</p>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        상태
+                      </p>
+                      {getStatusBadge(selectedRequest.status)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        소속회사
+                      </p>
+                      <p>{selectedRequest.company}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        부서
+                      </p>
+                      <p>{selectedRequest.department}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        방문일
+                      </p>
+                      <p>
+                        {format(
+                          new Date(selectedRequest.visit_date),
+                          "yyyy년 M월 d일",
+                          { locale: ko }
+                        )}
+                        {selectedRequest.end_date &&
+                          ` ~ ${format(
+                            new Date(selectedRequest.end_date),
+                            "yyyy년 M월 d일",
+                            { locale: ko }
+                          )}`}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        방문목적
+                      </p>
                       <p>{selectedRequest.purpose}</p>
                     </div>
-                    {selectedRequest.manager_name && (
-                      <>
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground">담당자</p>
-                          <p>{selectedRequest.manager_name}</p>
-                        </div>
-                        {selectedRequest.manager_phone && (
-                          <div>
-                            <p className="text-sm font-medium text-muted-foreground">담당자 연락처</p>
-                            <p>{selectedRequest.manager_phone}</p>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                  {selectedRequest.visitor_info && selectedRequest.visitor_info.length > 0 && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-2">방문자 정보</p>
-                      <div className="space-y-2">
-                        {selectedRequest.visitor_info.map((visitor, index) => (
-                          <div key={index} className="p-3 bg-muted rounded-md">
-                            <p className="font-medium">{visitor.visitor_name}</p>
-                            <p className="text-sm text-muted-foreground">{visitor.visitor_phone}</p>
-                          </div>
-                        ))}
-                      </div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        신청일
+                      </p>
+                      <p>
+                        {format(
+                          new Date(selectedRequest.created_at || new Date()),
+                          "yyyy년 M월 d일 HH:mm",
+                          { locale: ko }
+                        )}
+                      </p>
                     </div>
-                  )}
+                  </div>
+
+                  {/* 방문자 정보 */}
+                  {selectedRequest.visitor_info &&
+                    selectedRequest.visitor_info.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-2">
+                          방문자 정보
+                        </p>
+                        <div className="space-y-2">
+                          {selectedRequest.visitor_info.map((visitor, idx) => (
+                            <div
+                              key={idx}
+                              className="p-3 bg-muted rounded-md"
+                            >
+                              <p className="font-medium">{visitor.visitor_name}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {visitor.visitor_phone}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                  {/* 승인/반려 버튼 */}
                   {selectedRequest.status === "REQUESTED" && (
-                    <DialogFooter>
-                      <Button
-                        variant="outline"
-                        onClick={() => setSelectedRequest(null)}
-                      >
-                        닫기
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        onClick={() => {
-                          setRejectDialogOpen(true);
-                        }}
-                        className="gap-2"
-                      >
-                        <XCircle className="w-4 h-4" />
-                        반려
-                      </Button>
+                    <div className="flex gap-2 pt-4 border-t">
                       <Button
                         onClick={() => handleApprove(selectedRequest)}
-                        className="gap-2"
+                        className="flex-1 gap-2"
                       >
                         <CheckCircle2 className="w-4 h-4" />
                         승인
                       </Button>
-                    </DialogFooter>
+                      <Button
+                        variant="destructive"
+                        onClick={() => {
+                          setDetailDialogOpen(false);
+                          setRejectDialogOpen(true);
+                        }}
+                        className="flex-1 gap-2"
+                      >
+                        <XCircle className="w-4 h-4" />
+                        반려
+                      </Button>
+                    </div>
                   )}
                 </div>
               )}
@@ -525,6 +570,7 @@ export default function AdminApproval() {
                   onClick={() => {
                     setRejectDialogOpen(false);
                     setRejectReason("");
+                    setDetailDialogOpen(true);
                   }}
                 >
                   취소
@@ -542,4 +588,3 @@ export default function AdminApproval() {
     </div>
   );
 }
-

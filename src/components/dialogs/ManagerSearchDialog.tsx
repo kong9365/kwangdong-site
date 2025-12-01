@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Search } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Manager {
   id: string;
@@ -23,6 +25,8 @@ interface Manager {
   department: string;
   company: string;
   phone: string;
+  email?: string;
+  position?: string;
 }
 
 interface ManagerSearchDialogProps {
@@ -31,65 +35,78 @@ interface ManagerSearchDialogProps {
   onSelect: (manager: Manager) => void;
 }
 
-// Mock data for demonstration
-const MOCK_MANAGERS: Manager[] = [
-  {
-    id: "1",
-    name: "김철수",
-    department: "연구개발부",
-    company: "광동사이언스",
-    phone: "02-410-9100",
-  },
-  {
-    id: "2",
-    name: "이영희",
-    department: "생산기술부",
-    company: "광동제약",
-    phone: "02-410-9200",
-  },
-  {
-    id: "3",
-    name: "박민수",
-    department: "품질관리부",
-    company: "광동제약",
-    phone: "02-410-9300",
-  },
-  {
-    id: "4",
-    name: "정수진",
-    department: "마케팅부",
-    company: "광동사이언스",
-    phone: "02-410-9400",
-  },
-  {
-    id: "5",
-    name: "최동욱",
-    department: "경영지원부",
-    company: "광동제약",
-    phone: "02-410-9500",
-  },
-];
-
 export function ManagerSearchDialog({
   open,
   onOpenChange,
   onSelect,
 }: ManagerSearchDialogProps) {
+  const { toast } = useToast();
   const [searchName, setSearchName] = useState("");
   const [searchDept, setSearchDept] = useState("");
   const [searchResults, setSearchResults] = useState<Manager[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const handleSearch = () => {
-    const results = MOCK_MANAGERS.filter((manager) => {
-      const matchName = searchName
-        ? manager.name.includes(searchName)
-        : true;
-      const matchDept = searchDept
-        ? manager.department.includes(searchDept)
-        : true;
-      return matchName && matchDept;
-    });
-    setSearchResults(results);
+  // 다이얼로그가 열릴 때 초기화
+  useEffect(() => {
+    if (open) {
+      setSearchName("");
+      setSearchDept("");
+      setSearchResults([]);
+    }
+  }, [open]);
+
+  const handleSearch = async () => {
+    setLoading(true);
+    try {
+      let query = supabase
+        .from("managers")
+        .select("*")
+        .eq("is_active", true);
+
+      // 이름 검색
+      if (searchName.trim()) {
+        query = query.ilike("name", `%${searchName.trim()}%`);
+      }
+
+      // 부서 검색
+      if (searchDept.trim()) {
+        query = query.ilike("department", `%${searchDept.trim()}%`);
+      }
+
+      const { data, error } = await query.order("name", { ascending: true });
+
+      if (error) throw error;
+
+      setSearchResults(
+        (data || []).map((m) => ({
+          id: m.id,
+          name: m.name,
+          department: m.department,
+          company: m.company,
+          phone: m.phone,
+          email: m.email || undefined,
+          position: m.position || undefined,
+        }))
+      );
+
+      if (data && data.length === 0) {
+        toast({
+          title: "검색 결과 없음",
+          description: "검색 조건에 맞는 담당자를 찾을 수 없습니다.",
+          variant: "default",
+        });
+      }
+    } catch (error: any) {
+      console.error("담당자 검색 오류:", error);
+      toast({
+        title: "검색 실패",
+        description: error.message || "담당자 검색 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+      setSearchResults([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSelect = (manager: Manager) => {
@@ -131,14 +148,25 @@ export function ManagerSearchDialog({
           </div>
 
           <div className="flex justify-center">
-            <Button onClick={handleSearch} className="gap-2">
-              <Search className="w-4 h-4" />
+            <Button onClick={handleSearch} disabled={loading} className="gap-2">
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Search className="w-4 h-4" />
+              )}
               검색
             </Button>
           </div>
 
           {/* Search Results */}
-          {searchResults.length > 0 && (
+          {loading && (
+            <div className="text-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">검색 중...</p>
+            </div>
+          )}
+
+          {!loading && searchResults.length > 0 && (
             <div className="border rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
@@ -155,6 +183,11 @@ export function ManagerSearchDialog({
                     <TableRow key={manager.id}>
                       <TableCell className="font-medium">
                         {manager.name}
+                        {manager.position && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({manager.position})
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell>{manager.department}</TableCell>
                       <TableCell>{manager.company}</TableCell>
@@ -175,9 +208,15 @@ export function ManagerSearchDialog({
             </div>
           )}
 
-          {searchResults.length === 0 && searchName && searchDept && (
+          {!loading && searchResults.length === 0 && (searchName || searchDept) && (
             <div className="text-center py-8 text-muted-foreground">
               검색 결과가 없습니다.
+            </div>
+          )}
+
+          {!loading && !searchName && !searchDept && (
+            <div className="text-center py-8 text-muted-foreground">
+              담당자명 또는 부서명을 입력하고 검색해주세요.
             </div>
           )}
         </div>

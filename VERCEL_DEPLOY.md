@@ -76,4 +76,3 @@ GitHub의 `main` 브랜치에 푸시할 때마다 Vercel이 자동으로 재배�
 
 - Vercel 문서: https://vercel.com/docs
 - Vercel Discord: https://vercel.com/discord
-

@@ -180,6 +180,8 @@ export default function EmployeeDashboard() {
             <p className="text-muted-foreground">
               방문 예약 현황을 확인하고 승인할 수 있습니다.
             </p>
+            {/* 향후 확장: 로그인 기능 추가 예정 */}
+            {/* 향후 확장: 2단계 승인 프로세스 (담당자 승인 → 부서 승인자 승인) */}
           </div>
 
           {/* 통계 카드 */}
@@ -194,9 +196,17 @@ export default function EmployeeDashboard() {
                 <div className="text-2xl font-bold">{stats.total}</div>
               </CardContent>
             </Card>
-            <Card>
+            <Card 
+              className={stats.requested > 0 ? "cursor-pointer hover:shadow-md transition-shadow border-blue-200" : ""}
+              onClick={() => {
+                if (stats.requested > 0) {
+                  setStatusFilter("REQUESTED");
+                }
+              }}
+            >
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
                   승인 대기
                 </CardTitle>
               </CardHeader>
@@ -208,7 +218,8 @@ export default function EmployeeDashboard() {
             </Card>
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" />
                   승인 완료
                 </CardTitle>
               </CardHeader>
@@ -220,7 +231,8 @@ export default function EmployeeDashboard() {
             </Card>
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <XCircle className="w-4 h-4" />
                   반려됨
                 </CardTitle>
               </CardHeader>
@@ -336,7 +348,7 @@ export default function EmployeeDashboard() {
                               className="gap-2"
                             >
                               <Eye className="w-4 h-4" />
-                              상세보기
+                              {request.status === "REQUESTED" ? "승인하기" : "상세보기"}
                             </Button>
                           </TableCell>
                         </TableRow>

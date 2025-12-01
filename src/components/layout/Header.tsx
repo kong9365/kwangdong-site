@@ -46,6 +46,16 @@ export function Header() {
               예약현황
             </Link>
             <Link
+              to="/visit/checkin"
+              className={`text-sm font-medium transition-colors ${
+                isActive("/visit/checkin")
+                  ? "text-primary"
+                  : "text-foreground hover:text-primary"
+              }`}
+            >
+              방문수속
+            </Link>
+            <Link
               to="/notice"
               className={`text-sm font-medium transition-colors ${
                 isActive("/notice")

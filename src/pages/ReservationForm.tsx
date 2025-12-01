@@ -63,6 +63,14 @@ interface Visitor {
   safetyAgreed: boolean;
 }
 
+interface Manager {
+  id: string;
+  name: string;
+  department: string;
+  company: string;
+  phone: string;
+}
+
 const formSchema = z.object({
   purpose: z.string().min(1, "방문목적을 선택해주세요"),
   otherPurpose: z.string().optional(),
@@ -97,6 +105,7 @@ export default function ReservationForm() {
     },
   ]);
 
+  const [selectedManager, setSelectedManager] = useState<Manager | null>(null);
   const [visitorGuidelinesOpen, setVisitorGuidelinesOpen] = useState(false);
   const [safetyDialogOpen, setSafetyDialogOpen] = useState(false);
   const [managerSearchOpen, setManagerSearchOpen] = useState(false);
@@ -120,7 +129,8 @@ export default function ReservationForm() {
 
   const selectedPurpose = form.watch("purpose");
 
-  const handleManagerSelect = (manager: any) => {
+  const handleManagerSelect = (manager: Manager) => {
+    setSelectedManager(manager);
     form.setValue("manager", manager.name);
     form.setValue("department", manager.department);
   };
@@ -186,6 +196,7 @@ export default function ReservationForm() {
       // Supabase에 저장
       const { createVisitRequest } = await import("@/lib/api");
       
+<<<<<<< HEAD
       const phone = visitors[0].phone1 + visitors[0].phone2 + visitors[0].phone3;
       
       const visitRequest = await createVisitRequest({
@@ -195,6 +206,18 @@ export default function ReservationForm() {
         visit_date: format(values.startDate, "yyyy-MM-dd"),
         end_date: values.endDate ? format(values.endDate, "yyyy-MM-dd") : undefined,
         requester_id: "anonymous", // 로그인 구현 시 실제 사용자 ID 사용
+=======
+      const visitRequest = await createVisitRequest({
+        company: values.department || "",
+        department: values.department || "",
+        purpose: values.purpose === "99" ? values.otherPurpose || "" : PURPOSE_OPTIONS.find(p => p.value === values.purpose)?.label || values.purpose,
+        visit_date: format(values.startDate, "yyyy-MM-dd"),
+        end_date: values.endDate ? format(values.endDate, "yyyy-MM-dd") : undefined,
+        visitor_company: values.visitorCompany,
+        requester_id: "anonymous", // 로그인 구현 시 실제 사용자 ID 사용
+        manager_name: selectedManager?.name || values.manager || null,
+        manager_phone: selectedManager?.phone || null,
+>>>>>>> af33fb953dced0320827a0fa328f843d846f7ecc
         visitors: visitors.map((v) => ({
           name: v.name,
           phone: v.phone1 + v.phone2 + v.phone3,
