@@ -1,15 +1,55 @@
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Copy, QrCode, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { searchVisitRequests } from "@/lib/api";
 
 export default function ReservationComplete() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { toast } = useToast();
   const reservationNumber = searchParams.get("reservation");
+  const [visitRequest, setVisitRequest] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (reservationNumber) {
+      loadVisitRequest();
+    }
+  }, [reservationNumber]);
+
+  const loadVisitRequest = async () => {
+    if (!reservationNumber) return;
+    
+    setLoading(true);
+    try {
+      // 예약번호로 검색 (방문자명과 전화번호는 임시로 빈 값 사용)
+      // 실제로는 예약 완료 시점에 이미 정보를 가지고 있으므로 다른 방법 사용 가능
+      const data = await searchVisitRequests("", "", reservationNumber);
+      if (data && data.length > 0) {
+        setVisitRequest(data[0]);
+      }
+    } catch (error) {
+      console.error("예약 정보 로드 실패:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopyReservationNumber = () => {
+    if (reservationNumber) {
+      navigator.clipboard.writeText(reservationNumber);
+      toast({
+        title: "복사 완료",
+        description: "예약번호가 클립보드에 복사되었습니다.",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -34,9 +74,20 @@ export default function ReservationComplete() {
               {/* Reservation Number */}
               {reservationNumber && (
                 <div className="text-center mb-6">
-                  <Badge variant="secondary" className="text-lg px-4 py-2">
-                    예약번호: {reservationNumber}
-                  </Badge>
+                  <div className="flex items-center justify-center gap-2">
+                    <Badge variant="secondary" className="text-lg px-4 py-2 font-mono">
+                      예약번호: {reservationNumber}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCopyReservationNumber}
+                      className="h-8 w-8 p-0"
+                      title="예약번호 복사"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               )}
 
@@ -96,6 +147,33 @@ export default function ReservationComplete() {
                   </div>
                 </div>
               </div>
+
+              {/* QR Code Preview (승인된 경우) */}
+              {visitRequest && visitRequest.status === "APPROVED" && visitRequest.qr_code_url && (
+                <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-6 mb-8">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="rounded-full bg-green-100 dark:bg-green-900 p-2">
+                      <QrCode className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-green-900 dark:text-green-100">
+                        QR 코드가 생성되었습니다
+                      </h3>
+                      <p className="text-sm text-green-700 dark:text-green-300">
+                        방문 당일 QR 코드를 제시해주세요.
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => window.open(visitRequest.qr_code_url, "_blank")}
+                    className="w-full gap-2"
+                  >
+                    <QrCode className="w-4 h-4" />
+                    QR 코드 보기
+                  </Button>
+                </div>
+              )}
 
               {/* Notice */}
               <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-8">

@@ -20,12 +20,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, Loader2, XCircle, Eye } from "lucide-react";
+import { Search, Loader2, XCircle, Eye, Copy, QrCode } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { searchVisitRequests, cancelVisitRequest } from "@/lib/api";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface VisitRequest {
   id: string;
@@ -40,6 +47,7 @@ interface VisitRequest {
   manager_name?: string | null;
   manager_phone?: string | null;
   created_at: string;
+  qr_code_url?: string | null;
   visitor_info?: Array<{
     visitor_name: string;
     visitor_phone: string;
@@ -70,6 +78,8 @@ export default function ProgressView() {
   const [visitRequests, setVisitRequests] = useState<VisitRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<VisitRequest | null>(null);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
 
   const handleSearch = async () => {
     // 검증
@@ -342,8 +352,12 @@ export default function ProgressView() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => navigate(`/progress/view?reservation=${request.reservation_number}`)}
+                                  onClick={() => {
+                                    setSelectedRequest(request);
+                                    setDetailDialogOpen(true);
+                                  }}
                                   className="h-6 w-6 p-0"
+                                  title="상세보기"
                                 >
                                   <Eye className="w-4 h-4" />
                                 </Button>
@@ -386,13 +400,169 @@ export default function ProgressView() {
           {!loading && visitRequests.length === 0 && !error && (
             <Card className="shadow-sm border">
               <CardContent className="py-12 text-center">
-                <div className="text-muted-foreground space-y-2">
-                  <p className="text-lg">방문자명, 전화번호, 예약번호를 모두 입력하고 검색해주세요.</p>
-                  <p className="text-sm">예약번호는 5자리 숫자입니다.</p>
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="rounded-full bg-muted p-6">
+                    <Search className="w-12 h-12 text-muted-foreground" />
+                  </div>
+                  <div className="text-muted-foreground space-y-2">
+                    <p className="text-lg font-medium">검색 결과가 없습니다</p>
+                    <p className="text-sm">방문자명, 전화번호, 예약번호를 모두 입력하고 검색해주세요.</p>
+                    <p className="text-xs">예약번호는 5자리 숫자입니다.</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           )}
+
+          {/* 상세보기 다이얼로그 */}
+          <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>방문 예약 상세 정보</DialogTitle>
+              </DialogHeader>
+              {selectedRequest && (
+                <ScrollArea className="max-h-[70vh] pr-4">
+                  <div className="space-y-6">
+                    {/* 기본 정보 */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">
+                          예약번호
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-mono font-semibold">
+                            {selectedRequest.reservation_number}
+                          </p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                            onClick={() => {
+                              navigator.clipboard.writeText(selectedRequest.reservation_number);
+                              toast({
+                                title: "복사 완료",
+                                description: "예약번호가 클립보드에 복사되었습니다.",
+                              });
+                            }}
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">
+                          상태
+                        </p>
+                        <Badge className={`${STATUS_CONFIG[selectedRequest.status]?.bgColor || "bg-gray-100"} ${STATUS_CONFIG[selectedRequest.status]?.color || "text-gray-600"} border-0`}>
+                          {STATUS_CONFIG[selectedRequest.status]?.label || selectedRequest.status}
+                        </Badge>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">
+                          소속회사
+                        </p>
+                        <p>{selectedRequest.visitor_company || selectedRequest.company || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">
+                          부서
+                        </p>
+                        <p>{selectedRequest.department || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">
+                          방문 목적
+                        </p>
+                        <p>{selectedRequest.purpose || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">
+                          담당자
+                        </p>
+                        <p>{selectedRequest.manager_name || "-"}</p>
+                        {selectedRequest.manager_phone && (
+                          <p className="text-sm text-muted-foreground">{selectedRequest.manager_phone}</p>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">
+                          방문 기간
+                        </p>
+                        <p>
+                          {formatDate(selectedRequest.visit_date)}
+                          {selectedRequest.end_date && ` ~ ${formatDate(selectedRequest.end_date)}`}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">
+                          신청일
+                        </p>
+                        <p>{formatDate(selectedRequest.created_at)}</p>
+                      </div>
+                    </div>
+
+                    {/* 방문자 정보 */}
+                    {selectedRequest.visitor_info && selectedRequest.visitor_info.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-3">
+                          방문자 정보 ({selectedRequest.visitor_info.length}명)
+                        </p>
+                        <div className="space-y-2">
+                          {selectedRequest.visitor_info.map((visitor, index) => (
+                            <div key={index} className="border rounded-lg p-3">
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">이름</p>
+                                  <p className="font-medium">{visitor.visitor_name}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">연락처</p>
+                                  <p>{visitor.visitor_phone}</p>
+                                </div>
+                                {visitor.car_number && (
+                                  <div>
+                                    <p className="text-xs text-muted-foreground mb-1">차량번호</p>
+                                    <p>{visitor.car_number}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* QR 코드 링크 (승인된 경우) */}
+                    {selectedRequest.status === "APPROVED" && (
+                      <div className="border-t pt-4">
+                        <p className="text-sm font-medium text-muted-foreground mb-2">
+                          QR 코드
+                        </p>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            if (selectedRequest.qr_code_url) {
+                              window.open(selectedRequest.qr_code_url, "_blank");
+                            } else {
+                              toast({
+                                title: "QR 코드 없음",
+                                description: "QR 코드가 아직 생성되지 않았습니다.",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                          className="gap-2"
+                        >
+                          <QrCode className="w-4 h-4" />
+                          QR 코드 보기
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
       </main>
 

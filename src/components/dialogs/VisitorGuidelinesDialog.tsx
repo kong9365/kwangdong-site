@@ -19,8 +19,8 @@ export function VisitorGuidelinesDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] p-0 left-[15%] translate-x-0">
+    <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
+      <DialogContent className="max-w-md max-h-[90vh] p-0 left-[5%] translate-x-0 z-[60]">
         <div className="flex flex-col h-full">
           <div className="border-b p-4 bg-primary text-primary-foreground">
             <h2 className="text-xl font-bold text-center">방문자 준수사항</h2>
@@ -38,7 +38,7 @@ export function VisitorGuidelinesDialog({
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-1">-</span>
-                    <p>평택사업장 방문 시 외빈께서는 정문 경비실에서 QR인증 절차를 반드시 진행해주시길 바랍니다.</p>
+                    <p>광동제약 공장 방문 시 외빈께서는 정문 경비실에서 QR인증 절차를 반드시 진행해주시길 바랍니다.</p>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-1">-</span>
@@ -46,7 +46,7 @@ export function VisitorGuidelinesDialog({
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-1">-</span>
-                    <p>한미약품 평택사업장은 화학물질관리법을 준수하며, 동법 56조 및 시행규칙 50조에 의거 모든 출입자는 출입 기록을 남겨야만 합니다.</p>
+                    <p>광동제약 사업장은 화학물질관리법을 준수하며, 동법 56조 및 시행규칙 50조에 의거 모든 출입자는 출입 기록을 남겨야만 합니다.</p>
                   </li>
                 </ul>
               </div>
@@ -57,7 +57,7 @@ export function VisitorGuidelinesDialog({
                 <ul className="space-y-3 list-none">
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-1">-</span>
-                    <p>평택사업장의 모든 구역은 의약품 제조/품질관리 기준(GMP)에 의해 엄격하게 관리되고 있습니다. 직원 동행 없이 방문구역 이외 지역에 무단으로 출입해서는 안됩니다.</p>
+                    <p>공장의 모든 구역은 의약품 제조/품질관리 기준(GMP) 및 식품안전관리 기준(HACCP)에 의해 엄격하게 관리되고 있습니다. 직원 동행 없이 방문구역 이외 지역에 무단으로 출입해서는 안됩니다.</p>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-1">-</span>

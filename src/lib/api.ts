@@ -136,6 +136,7 @@ export async function getManagers(searchName?: string, searchDept?: string) {
 // 방문 요청 생성
 export async function createVisitRequest(
   request: VisitRequestInsert & {
+    end_date?: string | null;
     visitors: Array<{
       name: string;
       phone: string;

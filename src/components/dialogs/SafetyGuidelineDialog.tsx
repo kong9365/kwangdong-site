@@ -54,8 +54,8 @@ export function SafetyGuidelineDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-[90vw] sm:w-[700px] max-h-[85vh] p-0 left-auto right-[5%] sm:right-[15%] translate-x-0">
+    <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
+      <DialogContent className="max-w-2xl w-[90vw] sm:w-[700px] max-h-[85vh] p-0 left-auto right-[5%] sm:right-[15%] translate-x-0 z-[70]">
         <div className="flex flex-col h-full max-h-[85vh]">
           <div className="border-b p-4 bg-primary text-primary-foreground">
             <h2 className="text-xl font-bold text-center">안전보건지침</h2>

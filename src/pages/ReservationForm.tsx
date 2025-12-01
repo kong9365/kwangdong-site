@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { Calendar as CalendarIcon, Plus, Trash2 } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Trash2, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -77,7 +77,15 @@ const formSchema = z.object({
   manager: z.string().optional(),
   department: z.string().optional(),
   visitorCompany: z.string().min(1, "회사명을 입력해주세요"),
-  startDate: z.date({ required_error: "시작일을 선택해주세요" }),
+  startDate: z.date({ 
+    required_error: "시작일을 선택해주세요",
+  }).refine((date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date >= today;
+  }, {
+    message: "오늘 이후의 날짜를 선택해주세요",
+  }),
   endDate: z.date({ required_error: "종료일을 선택해주세요" }),
 }).refine((data) => {
   if (data.purpose === "99" && !data.otherPurpose) {
@@ -87,6 +95,14 @@ const formSchema = z.object({
 }, {
   message: "기타 목적을 입력해주세요",
   path: ["otherPurpose"],
+}).refine((data) => {
+  if (data.endDate && data.startDate) {
+    return data.endDate >= data.startDate;
+  }
+  return true;
+}, {
+  message: "종료일은 시작일 이후여야 합니다",
+  path: ["endDate"],
 });
 
 export default function ReservationForm() {
@@ -109,6 +125,7 @@ export default function ReservationForm() {
   const [visitorGuidelinesOpen, setVisitorGuidelinesOpen] = useState(false);
   const [safetyDialogOpen, setSafetyDialogOpen] = useState(false);
   const [managerSearchOpen, setManagerSearchOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // Show both dialogs on first load
   useEffect(() => {
@@ -177,20 +194,45 @@ export default function ReservationForm() {
     setVisitors(newVisitors);
   };
 
+  const validatePhoneNumber = (phone1: string, phone2: string, phone3: string): boolean => {
+    const phone = phone1 + phone2 + phone3;
+    // 전화번호 형식 검증 (010-0000-0000 형식)
+    const phoneRegex = /^(010|011|016|017|018|019)\d{3,4}\d{4}$/;
+    return phoneRegex.test(phone);
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     // Validate visitors
-    const hasInvalidVisitor = visitors.some(
-      (v) => !v.name || !v.phone2 || !v.phone3 || !v.safetyAgreed
-    );
+    const invalidVisitors: number[] = [];
+    visitors.forEach((v, index) => {
+      if (!v.name.trim()) {
+        invalidVisitors.push(index + 1);
+        return;
+      }
+      if (!v.phone2.trim() || !v.phone3.trim()) {
+        invalidVisitors.push(index + 1);
+        return;
+      }
+      if (!validatePhoneNumber(v.phone1, v.phone2, v.phone3)) {
+        invalidVisitors.push(index + 1);
+        return;
+      }
+      if (!v.safetyAgreed) {
+        invalidVisitors.push(index + 1);
+        return;
+      }
+    });
 
-    if (hasInvalidVisitor) {
+    if (invalidVisitors.length > 0) {
       toast({
         title: "방문자 정보 오류",
-        description: "모든 방문자의 정보를 정확히 입력해주세요.",
+        description: `방문자 ${invalidVisitors.join(", ")}번의 정보를 정확히 입력해주세요. (이름, 전화번호, 안전보건 지침 동의 필수)`,
         variant: "destructive",
       });
       return;
     }
+
+    setSubmitting(true);
 
     try {
       // Supabase에 저장
@@ -201,7 +243,7 @@ export default function ReservationForm() {
         department: values.department || "",
         purpose: values.purpose === "99" ? values.otherPurpose || "" : PURPOSE_OPTIONS.find(p => p.value === values.purpose)?.label || values.purpose,
         visit_date: format(values.startDate, "yyyy-MM-dd"),
-        end_date: values.endDate ? format(values.endDate, "yyyy-MM-dd") : undefined,
+        end_date: values.endDate ? format(values.endDate, "yyyy-MM-dd") : null,
         visitor_company: values.visitorCompany,
         requester_id: "anonymous", // 로그인 구현 시 실제 사용자 ID 사용
         manager_name: selectedManager?.name || values.manager || null,
@@ -211,7 +253,7 @@ export default function ReservationForm() {
           phone: v.phone1 + v.phone2 + v.phone3,
           carNumber: v.carNumber || undefined,
         })),
-      });
+      } as any);
 
       toast({
         title: "방문예약 신청 완료",
@@ -227,6 +269,8 @@ export default function ReservationForm() {
         description: error.message || "예약 신청 중 오류가 발생했습니다.",
         variant: "destructive",
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -467,6 +511,17 @@ export default function ReservationForm() {
                                 selected={field.value}
                                 onSelect={field.onChange}
                                 initialFocus
+                                disabled={(date) => {
+                                  const today = new Date();
+                                  today.setHours(0, 0, 0, 0);
+                                  const startDate = form.watch("startDate");
+                                  if (startDate) {
+                                    const start = new Date(startDate);
+                                    start.setHours(0, 0, 0, 0);
+                                    return date < start || date < today;
+                                  }
+                                  return date < today;
+                                }}
                                 className={cn("p-3 pointer-events-auto")}
                               />
                             </PopoverContent>
@@ -754,8 +809,20 @@ export default function ReservationForm() {
 
               {/* Submit Button */}
               <div className="flex justify-center">
-                <Button type="submit" size="lg" className="w-full sm:w-64">
-                  신청하기
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="w-full sm:w-64"
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      신청 중...
+                    </>
+                  ) : (
+                    "신청하기"
+                  )}
                 </Button>
               </div>
             </form>
