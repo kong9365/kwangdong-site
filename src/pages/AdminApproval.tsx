@@ -684,7 +684,7 @@ export default function AdminApproval() {
                       className="flex-1"
                       onClick={() => {
                         // QR 코드 링크 복사
-                        const qrUrl = approvedRequest.qr_code_url || `${window.location.origin}/visit/checkin?code=${encodeURIComponent(approvedRequest.qr_code_data)}`;
+                        const qrUrl = approvedRequest.qr_code_url || (approvedRequest.qr_code_id ? `${window.location.origin}/qr/${approvedRequest.qr_code_id}` : `${window.location.origin}/visit/checkin?code=${encodeURIComponent(approvedRequest.qr_code_data || "")}`);
                         navigator.clipboard.writeText(qrUrl);
                         toast({
                           title: "링크 복사 완료",
