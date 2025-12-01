@@ -15,6 +15,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { SafetyGuidelineDialog } from "@/components/dialogs/SafetyGuidelineDialog";
 import { VisitorGuidelinesDialog } from "@/components/dialogs/VisitorGuidelinesDialog";
 import { ManagerSearchDialog } from "@/components/dialogs/ManagerSearchDialog";
+import { VisitorAddConsentDialog } from "@/components/dialogs/VisitorAddConsentDialog";
 import {
   Form,
   FormControl,
@@ -126,6 +127,8 @@ export default function ReservationForm() {
   const [safetyDialogOpen, setSafetyDialogOpen] = useState(false);
   const [managerSearchOpen, setManagerSearchOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [visitorAddConsentOpen, setVisitorAddConsentOpen] = useState(false);
+  const [hasShownVisitorAddConsent, setHasShownVisitorAddConsent] = useState(false);
 
   // Show both dialogs on first load
   useEffect(() => {
@@ -162,6 +165,17 @@ export default function ReservationForm() {
       return;
     }
 
+    // 최초 1회만 동의 팝업 표시
+    if (!hasShownVisitorAddConsent) {
+      setVisitorAddConsentOpen(true);
+      return;
+    }
+
+    // 동의 후 방문자 추가
+    handleAddVisitorAfterConsent();
+  };
+
+  const handleAddVisitorAfterConsent = () => {
     setVisitors([
       ...visitors,
       {
@@ -174,6 +188,11 @@ export default function ReservationForm() {
         safetyAgreed: false,
       },
     ]);
+  };
+
+  const handleVisitorAddConsent = () => {
+    setHasShownVisitorAddConsent(true);
+    handleAddVisitorAfterConsent();
   };
 
   const removeVisitor = (index: number) => {
@@ -841,6 +860,11 @@ export default function ReservationForm() {
         open={managerSearchOpen}
         onOpenChange={setManagerSearchOpen}
         onSelect={handleManagerSelect}
+      />
+      <VisitorAddConsentDialog
+        open={visitorAddConsentOpen}
+        onOpenChange={setVisitorAddConsentOpen}
+        onConfirm={handleVisitorAddConsent}
       />
         </div>
       </main>
