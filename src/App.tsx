@@ -9,6 +9,8 @@ import ReservationForm from "./pages/ReservationForm";
 import ReservationComplete from "./pages/ReservationComplete";
 import Index from "./pages/Index";
 import ProgressView from "./pages/ProgressView";
+import AdminApproval from "./pages/AdminApproval";
+import EmployeeDashboard from "./pages/EmployeeDashboard";
 import Notice from "./pages/Notice";
 import FAQ from "./pages/FAQ";
 import NotFound from "./pages/NotFound";
@@ -26,8 +28,10 @@ const App = () => (
           <Route path="/reservation/agreement" element={<Agreement />} />
           <Route path="/reservation/form" element={<ReservationForm />} />
           <Route path="/reservation/complete" element={<ReservationComplete />} />
-          <Route path="/progress" element={<Index />} />
+          <Route path="/progress" element={<ProgressView />} />
           <Route path="/progress/view" element={<ProgressView />} />
+          <Route path="/employee" element={<EmployeeDashboard />} />
+          <Route path="/admin/approval" element={<AdminApproval />} />
           <Route path="/notice" element={<Notice />} />
           <Route path="/faq" element={<FAQ />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

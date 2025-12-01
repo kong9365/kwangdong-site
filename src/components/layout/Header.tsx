@@ -69,9 +69,16 @@ export function Header() {
 
           {/* Employee Mode Link */}
           <div className="hidden md:block">
-            <button className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+            <Link
+              to="/employee"
+              className={`text-sm font-medium transition-colors ${
+                isActive("/employee") || isActive("/admin/approval")
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-primary"
+              }`}
+            >
               임직원모드
-            </button>
+            </Link>
           </div>
         </div>
       </div>

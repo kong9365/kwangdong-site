@@ -1,12 +1,15 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function ReservationComplete() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const reservationNumber = searchParams.get("reservation");
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -28,6 +31,15 @@ export default function ReservationComplete() {
                 방문예약 신청이 완료되었습니다
               </h1>
 
+              {/* Reservation Number */}
+              {reservationNumber && (
+                <div className="text-center mb-6">
+                  <Badge variant="secondary" className="text-lg px-4 py-2">
+                    예약번호: {reservationNumber}
+                  </Badge>
+                </div>
+              )}
+
               {/* Description */}
               <div className="text-center text-muted-foreground space-y-2 mb-8">
                 <p>
@@ -36,6 +48,11 @@ export default function ReservationComplete() {
                 <p className="text-sm">
                   승인 완료 시 QR코드가 포함된 문자가 발송됩니다.
                 </p>
+                {reservationNumber && (
+                  <p className="text-sm font-medium text-foreground mt-4">
+                    예약번호로 예약현황을 조회하실 수 있습니다.
+                  </p>
+                )}
               </div>
 
               {/* Info Box */}
@@ -92,7 +109,13 @@ export default function ReservationComplete() {
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button
                   variant="outline"
-                  onClick={() => navigate("/progress")}
+                  onClick={() =>
+                    navigate(
+                      reservationNumber
+                        ? `/progress?reservation=${reservationNumber}`
+                        : "/progress"
+                    )
+                  }
                   className="sm:w-48"
                 >
                   예약현황 확인

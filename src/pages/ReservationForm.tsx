@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -167,7 +167,7 @@ export default function ReservationForm() {
     setVisitors(newVisitors);
   };
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     // Validate visitors
     const hasInvalidVisitor = visitors.some(
       (v) => !v.name || !v.phone2 || !v.phone3 || !v.safetyAgreed
@@ -182,13 +182,41 @@ export default function ReservationForm() {
       return;
     }
 
-    toast({
-      title: "방문예약 신청 완료",
-      description: "담당자 승인 후 문자메시지로 안내드리겠습니다.",
-    });
+    try {
+      // Supabase에 저장
+      const { createVisitRequest } = await import("@/lib/api");
+      
+      const phone = visitors[0].phone1 + visitors[0].phone2 + visitors[0].phone3;
+      
+      const visitRequest = await createVisitRequest({
+        company: values.visitorCompany,
+        department: values.department || "",
+        purpose: values.purpose === "99" ? values.otherPurpose || "" : values.purpose,
+        visit_date: format(values.startDate, "yyyy-MM-dd"),
+        end_date: values.endDate ? format(values.endDate, "yyyy-MM-dd") : undefined,
+        requester_id: "anonymous", // 로그인 구현 시 실제 사용자 ID 사용
+        visitors: visitors.map((v) => ({
+          name: v.name,
+          phone: v.phone1 + v.phone2 + v.phone3,
+          carNumber: v.carNumber || undefined,
+        })),
+      });
 
-    // Navigate to completion page
-    navigate("/reservation/complete");
+      toast({
+        title: "방문예약 신청 완료",
+        description: `예약번호: ${visitRequest.reservation_number}. 담당자 승인 후 문자메시지로 안내드리겠습니다.`,
+      });
+
+      // Navigate to completion page with reservation number
+      navigate(`/reservation/complete?reservation=${visitRequest.reservation_number}`);
+    } catch (error: any) {
+      console.error("예약 신청 오류:", error);
+      toast({
+        title: "예약 신청 실패",
+        description: error.message || "예약 신청 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
