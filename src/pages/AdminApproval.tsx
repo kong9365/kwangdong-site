@@ -553,6 +553,24 @@ export default function AdminApproval() {
                       </Button>
                     </div>
                   )}
+
+                  {/* 승인된 요청의 QR 코드 보기 버튼 */}
+                  {selectedRequest.status === "APPROVED" && selectedRequest.qr_code_data && (
+                    <div className="pt-4 border-t">
+                      <Button
+                        onClick={() => {
+                          setApprovedRequest(selectedRequest);
+                          setDetailDialogOpen(false);
+                          setQrCodeDialogOpen(true);
+                        }}
+                        className="w-full gap-2"
+                        variant="default"
+                      >
+                        <QrCode className="w-4 h-4" />
+                        QR 코드 보기
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </DialogContent>
