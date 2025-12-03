@@ -413,6 +413,7 @@ export async function checkInVisit(reservationNumber: string) {
     .from("visit_requests")
     .update({
       checked_in_at: new Date().toISOString(),
+      status: "COMPLETED",
       updated_at: new Date().toISOString(),
     })
     .eq("reservation_number", reservationNumber)
