@@ -15,18 +15,18 @@ export function Footer() {
 
   return (
     <>
-      <footer className="bg-card border-t border-border mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <footer className="bg-card border-t border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
             {/* Logo */}
             <div>
-              <h2 className="text-lg font-bold text-primary mb-2">광동제약</h2>
+              <h2 className="text-sm sm:text-base font-bold text-primary">광동제약</h2>
             </div>
 
             {/* Links & Address */}
-            <div className="space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
               {/* Footer Navigation */}
-              <div className="flex flex-wrap gap-4 text-sm">
+              <div className="flex flex-wrap gap-2 md:gap-4 text-xs sm:text-sm">
                 <button
                   onClick={() => setTermsOpen(true)}
                   className="text-muted-foreground hover:text-foreground transition-colors"
@@ -48,10 +48,10 @@ export function Footer() {
               </div>
 
               {/* Address */}
-              <address className="text-xs text-muted-foreground not-italic">
+              <address className="text-[10px] sm:text-xs text-muted-foreground not-italic">
                 서울특별시 송파구 위례성대로 14 광동타워 서비스 문의 02 410 0321
-                <br />
-                Copyright © 2023 Kwangdong Pharmaceutical Co.,Ltd. All Rights Reserved.
+                <span className="hidden md:inline"> | </span>
+                <span className="block md:inline">Copyright © 2023 Kwangdong Pharmaceutical Co.,Ltd. All Rights Reserved.</span>
               </address>
             </div>
           </div>
