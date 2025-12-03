@@ -30,10 +30,10 @@ const PROCEDURE_STEPS = [
 
 export function ProcedureSection() {
   return (
-    <section className="bg-muted py-16">
+    <section className="bg-muted py-8 sm:py-10 flex-shrink-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Title */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-6">
           <p className="text-sm font-medium text-primary mb-2">Procedure</p>
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
             방문절차안내
@@ -41,20 +41,20 @@ export function ProcedureSection() {
         </div>
 
         {/* Steps */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
           {PROCEDURE_STEPS.map((step, index) => {
             const Icon = step.icon;
             return (
               <div
                 key={index}
-                className="bg-card rounded-lg p-6 text-center hover:shadow-lg transition-shadow"
+                className="bg-card rounded-lg p-4 sm:p-6 text-center hover:shadow-lg transition-shadow"
               >
-                <p className="text-xs font-semibold text-primary mb-4">
+                <p className="text-xs font-semibold text-primary mb-3 sm:mb-4">
                   {step.num}
                 </p>
-                <div className="flex justify-center mb-4">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Icon className="w-8 h-8 text-primary" />
+                <div className="flex justify-center mb-3 sm:mb-4">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                   </div>
                 </div>
                 <p className="text-sm font-medium text-foreground">
