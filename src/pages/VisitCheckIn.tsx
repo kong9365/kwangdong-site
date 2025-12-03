@@ -6,7 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Camera, Loader2, QrCode, Link } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { CheckCircle2, XCircle, Camera, Loader2, QrCode, Link, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { decodeQRCode, checkInVisit, getVisitRequestByQRCodeId } from "@/lib/api";
 import { format } from "date-fns";
@@ -56,50 +62,55 @@ export default function VisitCheckIn() {
 
   // 카메라 시작
   const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" }, // 후면 카메라 우선
-      });
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        streamRef.current = stream;
-        setCameraActive(true);
+    setCameraActive(true);
+    
+    // 다이얼로그가 열린 후 카메라 초기화
+    setTimeout(async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" }, // 후면 카메라 우선
+        });
         
-        // QR 코드 스캔 라이브러리 로드 (동적 import)
-        try {
-          const { BrowserQRCodeReader } = await import("@zxing/library");
-          const codeReader = new BrowserQRCodeReader();
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          streamRef.current = stream;
           
-          codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, err) => {
-            if (result) {
-              const scannedText = result.getText();
-              stopCamera();
-              handleScannedQR(scannedText);
-            }
-            if (err && err.name !== "NotFoundException") {
-              console.error("QR 코드 스캔 오류:", err);
-            }
-          });
-          
-          scannerRef.current = codeReader;
-        } catch (importError) {
-          console.error("QR 코드 라이브러리 로드 실패:", importError);
-          toast({
-            title: "QR 코드 스캔 기능을 사용할 수 없습니다",
-            description: "수동으로 QR 코드를 입력해주세요.",
-            variant: "destructive",
-          });
+          // QR 코드 스캔 라이브러리 로드 (동적 import)
+          try {
+            const { BrowserQRCodeReader } = await import("@zxing/library");
+            const codeReader = new BrowserQRCodeReader();
+            
+            codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, err) => {
+              if (result) {
+                const scannedText = result.getText();
+                stopCamera();
+                handleScannedQR(scannedText);
+              }
+              if (err && err.name !== "NotFoundException") {
+                console.error("QR 코드 스캔 오류:", err);
+              }
+            });
+            
+            scannerRef.current = codeReader;
+          } catch (importError) {
+            console.error("QR 코드 라이브러리 로드 실패:", importError);
+            toast({
+              title: "QR 코드 스캔 기능을 사용할 수 없습니다",
+              description: "수동으로 QR 코드를 입력해주세요.",
+              variant: "destructive",
+            });
+          }
         }
+      } catch (err: any) {
+        console.error("카메라 접근 실패:", err);
+        setCameraActive(false);
+        toast({
+          title: "카메라 접근 실패",
+          description: "카메라 권한이 필요합니다.",
+          variant: "destructive",
+        });
       }
-    } catch (err: any) {
-      console.error("카메라 접근 실패:", err);
-      toast({
-        title: "카메라 접근 실패",
-        description: "카메라 권한이 필요합니다.",
-        variant: "destructive",
-      });
-    }
+    }, 100);
   };
 
   // 카메라 중지
@@ -116,6 +127,13 @@ export default function VisitCheckIn() {
       videoRef.current.srcObject = null;
     }
     setCameraActive(false);
+  };
+
+  // 카메라 다이얼로그 닫기 핸들러
+  const handleCameraDialogClose = (open: boolean) => {
+    if (!open) {
+      stopCamera();
+    }
   };
 
   // QR 코드 ID로 예약 정보 조회 (새로운 방식)
@@ -323,36 +341,13 @@ export default function VisitCheckIn() {
                     </p>
                     <Button
                       variant="outline"
-                      onClick={cameraActive ? stopCamera : startCamera}
+                      onClick={startCamera}
                       className="w-full"
+                      disabled={cameraActive}
                     >
-                      {cameraActive ? (
-                        <>
-                          <XCircle className="w-4 h-4 mr-2" />
-                          카메라 중지
-                        </>
-                      ) : (
-                        <>
-                          <Camera className="w-4 h-4 mr-2" />
-                          카메라 시작
-                        </>
-                      )}
+                      <Camera className="w-4 h-4 mr-2" />
+                      카메라 시작
                     </Button>
-                    
-                    {cameraActive && (
-                      <div className="mt-4 relative">
-                        <video
-                          ref={videoRef}
-                          autoPlay
-                          playsInline
-                          className="w-full rounded-lg border"
-                          style={{ maxHeight: "400px" }}
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="border-2 border-primary rounded-lg w-64 h-64" />
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   {error && (
@@ -444,6 +439,47 @@ export default function VisitCheckIn() {
       </main>
 
       <Footer />
+
+      {/* 카메라 다이얼로그 */}
+      <Dialog open={cameraActive} onOpenChange={handleCameraDialogClose}>
+        <DialogContent className="max-w-2xl w-[95vw] sm:w-full p-0">
+          <DialogHeader className="px-6 pt-6 pb-4">
+            <div className="flex items-center justify-between">
+              <DialogTitle>QR 코드 스캔</DialogTitle>
+              <button
+                onClick={() => stopCamera()}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </DialogHeader>
+          <div className="px-6 pb-6">
+            <div className="relative bg-black rounded-lg overflow-hidden">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="w-full aspect-video object-cover"
+              />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="border-2 border-primary rounded-lg w-64 h-64 shadow-lg" />
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground text-center mt-4">
+              QR 코드를 카메라에 맞춰주세요
+            </p>
+            <Button
+              variant="outline"
+              onClick={stopCamera}
+              className="w-full mt-4"
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              카메라 중지
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
