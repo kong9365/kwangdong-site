@@ -119,12 +119,12 @@ export function ManagerSearchDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl w-[95vw] sm:w-full max-h-[85vh] p-0">
+        <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle>담당자 검색</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 px-6 pb-6 overflow-y-auto max-h-[calc(85vh-120px)]">
           {/* Search Form */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -148,7 +148,7 @@ export function ManagerSearchDialog({
           </div>
 
           <div className="flex justify-center">
-            <Button onClick={handleSearch} disabled={loading} className="gap-2">
+            <Button onClick={handleSearch} disabled={loading} className="gap-2 w-full sm:w-auto">
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
@@ -168,43 +168,78 @@ export function ManagerSearchDialog({
 
           {!loading && searchResults.length > 0 && (
             <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>담당자명</TableHead>
-                    <TableHead>부서</TableHead>
-                    <TableHead>회사</TableHead>
-                    <TableHead>연락처</TableHead>
-                    <TableHead className="text-center">선택</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {searchResults.map((manager) => (
-                    <TableRow key={manager.id}>
-                      <TableCell className="font-medium">
-                        {manager.name}
-                        {manager.position && (
-                          <span className="text-xs text-muted-foreground ml-1">
-                            ({manager.position})
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>{manager.department}</TableCell>
-                      <TableCell>{manager.company}</TableCell>
-                      <TableCell>{manager.phone}</TableCell>
-                      <TableCell className="text-center">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleSelect(manager)}
-                        >
-                          선택
-                        </Button>
-                      </TableCell>
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>담당자명</TableHead>
+                      <TableHead>부서</TableHead>
+                      <TableHead>회사</TableHead>
+                      <TableHead>연락처</TableHead>
+                      <TableHead className="text-center">선택</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {searchResults.map((manager) => (
+                      <TableRow key={manager.id}>
+                        <TableCell className="font-medium">
+                          {manager.name}
+                          {manager.position && (
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({manager.position})
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>{manager.department}</TableCell>
+                        <TableCell>{manager.company}</TableCell>
+                        <TableCell>{manager.phone}</TableCell>
+                        <TableCell className="text-center">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleSelect(manager)}
+                          >
+                            선택
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="md:hidden divide-y">
+                {searchResults.map((manager) => (
+                  <div key={manager.id} className="p-4 space-y-2">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="font-medium">
+                          {manager.name}
+                          {manager.position && (
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({manager.position})
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          {manager.department} · {manager.company}
+                        </div>
+                        <div className="text-sm mt-1">{manager.phone}</div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleSelect(manager)}
+                        className="ml-2"
+                      >
+                        선택
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

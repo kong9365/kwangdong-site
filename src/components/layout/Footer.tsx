@@ -60,7 +60,7 @@ export function Footer() {
 
       {/* 방문신청약관 다이얼로그 */}
       <Dialog open={termsOpen} onOpenChange={setTermsOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh]">
+        <DialogContent className="max-w-3xl w-[95vw] sm:w-full max-h-[80vh]">
           <DialogHeader>
             <DialogTitle>방문 신청 약관</DialogTitle>
           </DialogHeader>
@@ -148,7 +148,7 @@ export function Footer() {
 
       {/* 개인정보처리방침 다이얼로그 */}
       <Dialog open={privacyOpen} onOpenChange={setPrivacyOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh]">
+        <DialogContent className="max-w-3xl w-[95vw] sm:w-full max-h-[80vh]">
           <DialogHeader>
             <DialogTitle>개인정보 처리방침</DialogTitle>
           </DialogHeader>

@@ -27,7 +27,7 @@ export function VisitorAddConsentDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-lg max-h-[90vh] p-0"
+        className="max-w-lg w-[95vw] sm:w-full max-h-[90vh] p-0"
         onInteractOutside={(e) => {
           // 배경 클릭 시 닫히지 않도록 방지
           e.preventDefault();

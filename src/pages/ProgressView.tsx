@@ -321,7 +321,8 @@ export default function ProgressView() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -393,6 +394,83 @@ export default function ProgressView() {
                     </TableBody>
                   </Table>
                 </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden space-y-4">
+                  {visitRequests.map((request, index) => {
+                    const statusConfig = STATUS_CONFIG[request.status] || STATUS_CONFIG.REQUESTED;
+                    const canCancelVisit = canCancel(request.visit_date);
+                    
+                    return (
+                      <Card key={request.id} className="border">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
+                              <Badge className={`${statusConfig.bgColor} ${statusConfig.color} border-0`}>
+                                {statusConfig.label}
+                              </Badge>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedRequest(request);
+                                setDetailDialogOpen(true);
+                              }}
+                              className="h-8 w-8 p-0"
+                              title="상세보기"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          
+                          <div className="space-y-2 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">신청일: </span>
+                              <span>{formatDate(request.created_at)}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">소속회사: </span>
+                              <span>{request.visitor_company || "-"}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">방문자명: </span>
+                              <span>{formatVisitorNames(request.visitor_info)}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">방문기간: </span>
+                              <span>
+                                {formatDate(request.visit_date)}
+                                {request.end_date && ` ~ ${formatDate(request.end_date)}`}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">방문목적: </span>
+                              <span>{request.purpose}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">담당자: </span>
+                              <span>{request.manager_name || "-"}</span>
+                            </div>
+                          </div>
+
+                          <div className="pt-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleCancel(request.id, request.visit_date)}
+                              disabled={!canCancelVisit || request.status === "CANCELLED" || request.status === "COMPLETED"}
+                              className="w-full text-xs"
+                            >
+                              취소
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
               </CardContent>
             </Card>
           )}
@@ -416,7 +494,7 @@ export default function ProgressView() {
 
           {/* 상세보기 다이얼로그 */}
           <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-3xl w-[95vw] sm:w-full max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>방문 예약 상세 정보</DialogTitle>
               </DialogHeader>
