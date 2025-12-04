@@ -31,7 +31,7 @@ export function Header() {
   };
 
   return (
-    <header className="bg-primary border-b border-primary/20 sticky top-0 z-50 shadow-sm relative">
+    <header className="bg-white border-b border-border sticky top-0 z-50 shadow-sm relative">
       {/* Logo - 왼쪽 가장자리에 배치 */}
       <div className="absolute left-0 top-0 bg-white h-16 px-4 sm:px-6 flex items-center z-10">
         <Link to="/" className="flex items-center">
@@ -53,8 +53,8 @@ export function Header() {
                 to={item.path}
                 className={`text-sm font-medium transition-colors ${
                   isActive(item.path)
-                    ? "text-primary-foreground bg-primary-foreground/10 px-3 py-1.5 rounded-md"
-                    : "text-primary-foreground/90 hover:text-primary-foreground hover:bg-primary-foreground/10 px-3 py-1.5 rounded-md"
+                    ? "text-primary"
+                    : "text-foreground hover:text-primary"
                 }`}
               >
                 {item.label}
@@ -66,10 +66,10 @@ export function Header() {
           <div className="hidden md:flex items-center gap-4">
             <Link
               to="/employee"
-              className={`text-sm font-medium transition-colors px-3 py-1.5 rounded-md ${
+              className={`text-sm font-medium transition-colors ${
                 isActive("/employee") || isActive("/admin/approval")
-                  ? "text-primary-foreground bg-primary-foreground/10"
-                  : "text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-primary"
               }`}
             >
               임직원모드
@@ -80,7 +80,7 @@ export function Header() {
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <button
-                className="md:hidden p-2 rounded-md text-primary-foreground hover:bg-primary-foreground/10 transition-colors"
+                className="md:hidden p-2 rounded-md text-foreground hover:bg-muted transition-colors"
                 aria-label="메뉴 열기"
               >
                 <Menu className="h-6 w-6" />
