@@ -6,7 +6,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { X } from "lucide-react";
 
 interface VisitorAddConsentDialogProps {
   open: boolean;
@@ -25,11 +24,15 @@ export function VisitorAddConsentDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent 
         className="max-w-lg w-[95vw] sm:w-full max-h-[90vh] p-0"
         onInteractOutside={(e) => {
           // 배경 클릭 시 닫히지 않도록 방지
+          e.preventDefault();
+        }}
+        onEscapeKeyDown={(e) => {
+          // ESC 키로 닫히지 않도록 방지
           e.preventDefault();
         }}
       >
@@ -39,12 +42,6 @@ export function VisitorAddConsentDialog({
             <DialogTitle className="text-xl font-bold text-primary-foreground">
               알림
             </DialogTitle>
-            <button
-              onClick={() => onOpenChange(false)}
-              className="text-primary-foreground hover:opacity-70 transition-opacity"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
 
           {/* Body */}
