@@ -34,7 +34,7 @@ export default function Home() {
             style={{
               backgroundImage: "url('/신사옥 이미지.jpg')",
               backgroundSize: "cover",
-              backgroundPosition: "center",
+              backgroundPosition: "center top",
               backgroundRepeat: "no-repeat",
               filter: "blur(3px)",
               transform: "scale(1.05)", // 블러로 인한 여백 보정
@@ -48,14 +48,14 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               {/* 왼쪽: 환영 메시지 + 예약현황 버튼 */}
               <div className="text-center lg:text-left">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">
                   광동제약 공장 방문예약
                 </h1>
-                <p className="text-base sm:text-lg text-muted-foreground mb-6">
+                <p className="text-base sm:text-lg text-white/90 mb-6">
                   방문예약시스템에 오신 것을 환영합니다.
                 </p>
                 <Link to="/progress">
-                  <Button variant="outline" size="lg" className="gap-2">
+                  <Button variant="outline" size="lg" className="gap-2 border-white/30 text-white hover:bg-white/10 hover:text-white">
                     <Search className="w-4 h-4" />
                     예약현황
                   </Button>
@@ -63,9 +63,9 @@ export default function Home() {
               </div>
 
               {/* 오른쪽: 방문예약 신청 폼 */}
-              <div className="bg-card/95 backdrop-blur-sm rounded-lg shadow-lg p-6 sm:p-8">
+              <div className="bg-white/10 backdrop-blur-md rounded-lg shadow-lg border border-white/20 p-6 sm:p-8">
                 <div className="mb-6">
-                  <h2 className="text-xl font-bold text-foreground">
+                  <h2 className="text-xl font-bold text-white">
                     방문예약 신청
                   </h2>
                 </div>
@@ -73,14 +73,14 @@ export default function Home() {
                 <div className="space-y-4">
                   {/* Factory Select */}
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-sm font-medium mb-2 text-white">
                       광동제약
                     </label>
                     <Select
                       value={selectedFactory}
                       onValueChange={setSelectedFactory}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full bg-white/90 border-white/30 text-foreground">
                         <SelectValue placeholder="공장을 선택하세요" />
                       </SelectTrigger>
                       <SelectContent>
