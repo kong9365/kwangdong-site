@@ -21,7 +21,6 @@ export function Header() {
   const navigationItems = [
     { path: "/", label: "방문예약" },
     { path: "/progress", label: "예약현황" },
-    { path: "/visit/checkin", label: "방문수속" },
     { path: "/notice", label: "공지사항" },
     { path: "/faq", label: "FAQ" },
   ];

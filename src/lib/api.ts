@@ -113,7 +113,30 @@ export async function searchVisitRequestByPhone(phone: string) {
 }
 
 // 담당자 목록 조회
-export async function getManagers(searchName?: string, searchDept?: string) {
+// 담당자 정보 인터페이스
+export interface Manager {
+  id: string;
+  user_id?: string | null;
+  name: string;
+  department: string;
+  company: string;
+  phone: string;
+  email?: string | null;
+  position?: string | null;
+  is_active: boolean;
+  is_approver: boolean;
+  approver_level?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+/**
+ * 담당자 목록 조회
+ * @param searchName 이름 검색 (부분 일치)
+ * @param searchDept 부서 검색 (부분 일치)
+ * @returns 담당자 목록
+ */
+export async function getManagers(searchName?: string, searchDept?: string): Promise<Manager[]> {
   let query = supabase
     .from("managers")
     .select("*")
@@ -130,7 +153,27 @@ export async function getManagers(searchName?: string, searchDept?: string) {
   const { data, error } = await query.order("name", { ascending: true });
 
   if (error) throw error;
-  return data;
+  return (data || []) as Manager[];
+}
+
+/**
+ * 특정 담당자 조회
+ * @param managerId 담당자 ID
+ * @returns 담당자 정보
+ */
+export async function getManagerById(managerId: string): Promise<Manager | null> {
+  const { data, error } = await supabase
+    .from("managers")
+    .select("*")
+    .eq("id", managerId)
+    .eq("is_active", true)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw error;
+  }
+  return data as Manager;
 }
 
 // 방문 요청 생성

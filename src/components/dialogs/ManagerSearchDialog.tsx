@@ -16,10 +16,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { supabase } from "@/integrations/supabase/client";
+import { getManagers, type Manager } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 
-interface Manager {
+interface ManagerSearchDialogManager {
   id: string;
   name: string;
   department: string;
@@ -32,7 +32,7 @@ interface Manager {
 interface ManagerSearchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSelect: (manager: Manager) => void;
+  onSelect: (manager: ManagerSearchDialogManager) => void;
 }
 
 export function ManagerSearchDialog({
@@ -43,7 +43,7 @@ export function ManagerSearchDialog({
   const { toast } = useToast();
   const [searchName, setSearchName] = useState("");
   const [searchDept, setSearchDept] = useState("");
-  const [searchResults, setSearchResults] = useState<Manager[]>([]);
+  const [searchResults, setSearchResults] = useState<ManagerSearchDialogManager[]>([]);
   const [loading, setLoading] = useState(false);
 
   // 다이얼로그가 열릴 때 초기화
@@ -58,27 +58,13 @@ export function ManagerSearchDialog({
   const handleSearch = async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from("managers")
-        .select("*")
-        .eq("is_active", true);
-
-      // 이름 검색
-      if (searchName.trim()) {
-        query = query.ilike("name", `%${searchName.trim()}%`);
-      }
-
-      // 부서 검색
-      if (searchDept.trim()) {
-        query = query.ilike("department", `%${searchDept.trim()}%`);
-      }
-
-      const { data, error } = await query.order("name", { ascending: true });
-
-      if (error) throw error;
+      const data = await getManagers(
+        searchName.trim() || undefined,
+        searchDept.trim() || undefined
+      );
 
       setSearchResults(
-        (data || []).map((m) => ({
+        data.map((m) => ({
           id: m.id,
           name: m.name,
           department: m.department,
@@ -89,7 +75,7 @@ export function ManagerSearchDialog({
         }))
       );
 
-      if (data && data.length === 0) {
+      if (data.length === 0) {
         toast({
           title: "검색 결과 없음",
           description: "검색 조건에 맞는 담당자를 찾을 수 없습니다.",
@@ -109,7 +95,7 @@ export function ManagerSearchDialog({
     }
   };
 
-  const handleSelect = (manager: Manager) => {
+  const handleSelect = (manager: ManagerSearchDialogManager) => {
     onSelect(manager);
     onOpenChange(false);
     setSearchName("");

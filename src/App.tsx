@@ -12,6 +12,7 @@ import ProgressView from "./pages/ProgressView";
 import VisitCheckIn from "./pages/VisitCheckIn";
 import AdminApproval from "./pages/AdminApproval";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
+import { Navigate } from "react-router-dom";
 import Notice from "./pages/Notice";
 import FAQ from "./pages/FAQ";
 import NotFound from "./pages/NotFound";
@@ -31,8 +32,9 @@ const App = () => (
           <Route path="/reservation/complete" element={<ReservationComplete />} />
           <Route path="/progress" element={<ProgressView />} />
           <Route path="/progress/view" element={<ProgressView />} />
-          <Route path="/visit/checkin" element={<VisitCheckIn />} />
-          <Route path="/qr/:id" element={<VisitCheckIn />} />
+          {/* 기존 방문수속 경로는 임직원모드로 리다이렉트 */}
+          <Route path="/visit/checkin" element={<Navigate to="/employee?tab=checkin" replace />} />
+          <Route path="/qr/:id" element={<Navigate to="/employee?tab=checkin" replace />} />
           <Route path="/employee" element={<EmployeeDashboard />} />
           <Route path="/admin/approval" element={<AdminApproval />} />
           <Route path="/notice" element={<Notice />} />
