@@ -16,43 +16,41 @@ export function Footer() {
   return (
     <>
       <footer className="bg-[#1a1a1a] border-t border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
-            {/* Logo */}
-            <div>
-              <h2 className="text-sm sm:text-base font-bold text-white">광동제약</h2>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col gap-4 w-full">
+            {/* Links */}
+            <div className="flex flex-wrap gap-2 md:gap-4 text-xs sm:text-sm justify-center md:justify-start">
+              <button
+                onClick={() => setTermsOpen(true)}
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                방문신청약관
+              </button>
+              <button
+                onClick={() => setPrivacyOpen(true)}
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                개인정보처리방침
+              </button>
+              <Link
+                to="/faq"
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                FAQ
+              </Link>
             </div>
 
-            {/* Links & Address */}
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-              {/* Footer Navigation */}
-              <div className="flex flex-wrap gap-2 md:gap-4 text-xs sm:text-sm">
-                <button
-                  onClick={() => setTermsOpen(true)}
-                  className="text-white/80 hover:text-white transition-colors"
-                >
-                  방문신청약관
-                </button>
-                <button
-                  onClick={() => setPrivacyOpen(true)}
-                  className="text-white/80 hover:text-white transition-colors"
-                >
-                  개인정보처리방침
-                </button>
-                <Link
-                  to="/faq"
-                  className="text-white/80 hover:text-white transition-colors"
-                >
-                  FAQ
-                </Link>
-              </div>
-
-              {/* Address */}
-              <address className="text-[10px] sm:text-xs text-white/70 not-italic">
-                서울특별시 송파구 위례성대로 14 광동타워 서비스 문의 02 410 0321
-                <span className="hidden md:inline"> | </span>
-                <span className="block md:inline">Copyright © 2023 Kwangdong Pharmaceutical Co.,Ltd. All Rights Reserved.</span>
+            {/* Address */}
+            <div className="flex flex-col gap-2 text-[10px] sm:text-xs text-white/70">
+              <address className="not-italic">
+                광동제약 송탄공장 : 경기도 평택시 경기대로 1081 (장당동) 광동제약㈜, T 031-8030-1777
               </address>
+              <address className="not-italic">
+                광동제약 GMP공장 : 경기도 평택시 산단로 114 광동제약㈜, T 031) 612-1111
+              </address>
+              <div className="mt-2 text-white/60">
+                COPYRIGHT(C) KWANG DONG PHARMACEUTICAL CO., LTD. ALL RIGHTS RESERVED
+              </div>
             </div>
           </div>
         </div>
