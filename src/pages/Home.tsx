@@ -34,7 +34,7 @@ export default function Home() {
             style={{
               backgroundImage: "url('/신사옥 이미지.jpg')",
               backgroundSize: "cover",
-              backgroundPosition: "center top",
+              backgroundPosition: "center 20%",
               backgroundRepeat: "no-repeat",
               filter: "blur(3px)",
               transform: "scale(1.05)", // 블러로 인한 여백 보정
@@ -55,7 +55,7 @@ export default function Home() {
                   방문예약시스템에 오신 것을 환영합니다.
                 </p>
                 <Link to="/progress">
-                  <Button variant="outline" size="lg" className="gap-2 border-white/30 text-white hover:bg-white/10 hover:text-white">
+                  <Button variant="outline" size="lg" className="gap-2 border-white/50 bg-white/10 text-white hover:bg-white/20 hover:text-white hover:border-white/70">
                     <Search className="w-4 h-4" />
                     예약현황
                   </Button>
