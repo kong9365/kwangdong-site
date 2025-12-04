@@ -37,18 +37,15 @@ export function SafetyGuidelineDialog({
         }}
       >
         <div className="flex flex-col h-full max-h-[90vh]">
-          <div className="border-b p-6 bg-primary text-primary-foreground">
-            <h2 className="text-2xl font-bold text-center tracking-tight">
+          <div className="border-b px-4 py-3 bg-primary text-primary-foreground">
+            <h2 className="text-xl font-bold text-center tracking-tight">
               안전보건지침
             </h2>
           </div>
 
-          <ScrollArea className="flex-1 p-8">
-            <div className="space-y-10 text-base leading-relaxed text-foreground">
+          <ScrollArea className="flex-1 p-6">
+            <div className="space-y-6 text-sm leading-relaxed text-foreground">
               <section className="space-y-4 text-center">
-                <p className="text-sm font-semibold tracking-[0.3em] text-primary/80 uppercase">
-                  Sustainable Vision
-                </p>
                 <h3 className="text-3xl font-bold text-primary">
                   더 나은 내일, 지속가능한 미래를 만들어 나가겠습니다.
                 </h3>
@@ -68,9 +65,6 @@ export function SafetyGuidelineDialog({
 
               <section className="space-y-6">
                 <div className="space-y-3 text-center">
-                  <p className="text-sm font-semibold tracking-[0.3em] text-primary/80 uppercase">
-                    Safety &amp; Health
-                  </p>
                   <h4 className="text-2xl font-bold">안전보건경영 방침</h4>
                   <p>
                     광동제약(주)은 인간존중의 철학과 고객의 건강한 삶에 기여한다는 경영이념에 따라 안전·보건 관리가
@@ -101,24 +95,25 @@ export function SafetyGuidelineDialog({
                   <span className="text-primary">최 성 원</span>
                 </div>
               </section>
-
-              {/* Agreement Checkbox */}
-              <div className="flex items-center justify-center gap-3 p-4 bg-muted/30 rounded-lg">
-                <Checkbox
-                  id="safety-agree"
-                  checked={agreed}
-                  onCheckedChange={(checked) => setAgreed(checked as boolean)}
-                  className="h-5 w-5"
-                />
-                <label 
-                  htmlFor="safety-agree" 
-                  className={`text-base font-medium ${agreed ? "text-foreground" : "text-foreground/80"}`}
-                >
-                  상기 안전보건경영 방침을 확인하였으며, 방문신청 약관에 동의합니다.
-                </label>
-              </div>
             </div>
           </ScrollArea>
+
+          <div className="border-t p-4 bg-muted/50">
+            <div className="flex items-center justify-center gap-3">
+              <Checkbox
+                id="safety-agree"
+                checked={agreed}
+                onCheckedChange={(checked) => setAgreed(checked as boolean)}
+                className="h-5 w-5"
+              />
+              <label 
+                htmlFor="safety-agree" 
+                className={`text-sm sm:text-base font-medium ${agreed ? "text-foreground" : "text-foreground/80"}`}
+              >
+                상기 안전보건경영 방침을 확인하였으며, 방문신청 약관에 동의합니다.
+              </label>
+            </div>
+          </div>
 
           <div className="border-t p-6">
             <Button 
