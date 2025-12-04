@@ -61,9 +61,6 @@ export default function Home() {
               {/* 오른쪽: 방문예약 신청 폼 */}
               <div className="bg-card/95 backdrop-blur-sm rounded-lg shadow-lg p-6 sm:p-8">
                 <div className="mb-6">
-                  <p className="text-xs font-semibold text-primary mb-2">
-                    Current
-                  </p>
                   <h2 className="text-xl font-bold text-foreground">
                     방문예약 신청
                   </h2>

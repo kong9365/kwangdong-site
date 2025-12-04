@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import kwangdongLogo from "@/assets/kwangdong-primary-signature.png";
 import {
   Dialog,
   DialogContent,
@@ -17,9 +18,30 @@ export function Footer() {
     <>
       <footer className="bg-[#1a1a1a] border-t border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-          <div className="flex flex-col gap-4 w-full">
-            {/* Links */}
-            <div className="flex flex-wrap gap-2 md:gap-4 text-xs sm:text-sm justify-center md:justify-start">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-8 w-full">
+            {/* Logo */}
+            <div className="flex-shrink-0">
+              <Link to="/" className="flex items-center">
+                <img
+                  src={kwangdongLogo}
+                  alt="광동제약"
+                  className="h-8 sm:h-10 w-auto brightness-0 invert"
+                />
+              </Link>
+            </div>
+
+            {/* Address - 2줄 */}
+            <div className="flex flex-col gap-1 text-[10px] sm:text-xs text-white/70 flex-1">
+              <address className="not-italic">
+                광동제약 송탄공장 : 경기도 평택시 경기대로 1081 (장당동) 광동제약㈜, T 031-8030-1777
+              </address>
+              <address className="not-italic">
+                광동제약 GMP공장 : 경기도 평택시 산단로 114 광동제약㈜, T 031) 612-1111
+              </address>
+            </div>
+
+            {/* Links - 3개 */}
+            <div className="flex flex-wrap gap-2 md:gap-4 text-xs sm:text-sm">
               <button
                 onClick={() => setTermsOpen(true)}
                 className="text-white/80 hover:text-white transition-colors"
@@ -39,19 +61,11 @@ export function Footer() {
                 FAQ
               </Link>
             </div>
+          </div>
 
-            {/* Address */}
-            <div className="flex flex-col gap-2 text-[10px] sm:text-xs text-white/70">
-              <address className="not-italic">
-                광동제약 송탄공장 : 경기도 평택시 경기대로 1081 (장당동) 광동제약㈜, T 031-8030-1777
-              </address>
-              <address className="not-italic">
-                광동제약 GMP공장 : 경기도 평택시 산단로 114 광동제약㈜, T 031) 612-1111
-              </address>
-              <div className="mt-2 text-white/60">
-                COPYRIGHT(C) KWANG DONG PHARMACEUTICAL CO., LTD. ALL RIGHTS RESERVED
-              </div>
-            </div>
+          {/* Copyright */}
+          <div className="mt-4 text-[10px] sm:text-xs text-white/60 text-center md:text-left">
+            COPYRIGHT(C) KWANG DONG PHARMACEUTICAL CO., LTD. ALL RIGHTS RESERVED
           </div>
         </div>
       </footer>
