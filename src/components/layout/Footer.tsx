@@ -15,12 +15,12 @@ export function Footer() {
 
   return (
     <>
-      <footer className="bg-card border-t border-border">
+      <footer className="bg-[#1a1a1a] border-t border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
             {/* Logo */}
             <div>
-              <h2 className="text-sm sm:text-base font-bold text-primary">광동제약</h2>
+              <h2 className="text-sm sm:text-base font-bold text-white">광동제약</h2>
             </div>
 
             {/* Links & Address */}
@@ -29,26 +29,26 @@ export function Footer() {
               <div className="flex flex-wrap gap-2 md:gap-4 text-xs sm:text-sm">
                 <button
                   onClick={() => setTermsOpen(true)}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-white/80 hover:text-white transition-colors"
                 >
                   방문신청약관
                 </button>
                 <button
                   onClick={() => setPrivacyOpen(true)}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-white/80 hover:text-white transition-colors"
                 >
                   개인정보처리방침
                 </button>
                 <Link
                   to="/faq"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-white/80 hover:text-white transition-colors"
                 >
                   FAQ
                 </Link>
               </div>
 
               {/* Address */}
-              <address className="text-[10px] sm:text-xs text-muted-foreground not-italic">
+              <address className="text-[10px] sm:text-xs text-white/70 not-italic">
                 서울특별시 송파구 위례성대로 14 광동타워 서비스 문의 02 410 0321
                 <span className="hidden md:inline"> | </span>
                 <span className="block md:inline">Copyright © 2023 Kwangdong Pharmaceutical Co.,Ltd. All Rights Reserved.</span>

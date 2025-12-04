@@ -28,7 +28,7 @@ export default function Home() {
       <main className="flex-1 flex flex-col">
         {/* Hero Section - 좌우 배치, 배경 이미지 준비 */}
         <section 
-          className="relative flex-1 flex items-center min-h-[60vh] sm:min-h-[65vh] bg-gradient-to-b from-primary/5 to-background"
+          className="relative flex-1 flex items-center min-h-[60vh] sm:min-h-[65vh] bg-background"
           style={{
             // 나중에 배경 이미지 적용 시 사용
             // backgroundImage: "url('/path/to/background-image.jpg')",
@@ -38,7 +38,7 @@ export default function Home() {
           }}
         >
           {/* 배경 오버레이 (배경 이미지 적용 시 텍스트 가독성 향상) */}
-          <div className="absolute inset-0 bg-black/20" />
+          <div className="absolute inset-0 bg-black/10" />
           
           <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">

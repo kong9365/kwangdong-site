@@ -31,7 +31,7 @@ export function Header() {
   };
 
   return (
-    <header className="bg-card border-b border-border sticky top-0 z-50">
+    <header className="bg-primary border-b border-primary/20 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -40,7 +40,7 @@ export function Header() {
               <img 
                 src={kwangdongLogo} 
                 alt="광동제약" 
-                className="h-10 sm:h-12 w-auto"
+                className="h-10 sm:h-12 w-auto brightness-0 invert"
               />
             </Link>
           </div>
@@ -53,8 +53,8 @@ export function Header() {
                 to={item.path}
                 className={`text-sm font-medium transition-colors ${
                   isActive(item.path)
-                    ? "text-primary"
-                    : "text-foreground hover:text-primary"
+                    ? "text-primary-foreground bg-primary-foreground/10 px-3 py-1.5 rounded-md"
+                    : "text-primary-foreground/90 hover:text-primary-foreground hover:bg-primary-foreground/10 px-3 py-1.5 rounded-md"
                 }`}
               >
                 {item.label}
@@ -66,10 +66,10 @@ export function Header() {
           <div className="hidden md:flex items-center gap-4">
             <Link
               to="/employee"
-              className={`text-sm font-medium transition-colors ${
+              className={`text-sm font-medium transition-colors px-3 py-1.5 rounded-md ${
                 isActive("/employee") || isActive("/admin/approval")
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-primary"
+                  ? "text-primary-foreground bg-primary-foreground/10"
+                  : "text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
               }`}
             >
               임직원모드
@@ -80,7 +80,7 @@ export function Header() {
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <button
-                className="md:hidden p-2 rounded-md text-foreground hover:bg-muted transition-colors"
+                className="md:hidden p-2 rounded-md text-primary-foreground hover:bg-primary-foreground/10 transition-colors"
                 aria-label="메뉴 열기"
               >
                 <Menu className="h-6 w-6" />

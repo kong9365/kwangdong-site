@@ -52,7 +52,7 @@ export function ProcedureSection() {
                       {step.num}
                     </p>
                     <div className="flex items-center justify-center">
-                      <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-foreground" />
+                      <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                     </div>
                     <p className="text-xs sm:text-sm font-medium text-foreground whitespace-nowrap">
                       {step.text}
