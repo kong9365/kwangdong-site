@@ -43,37 +43,34 @@ export function SafetyGuidelineDialog({
             </h2>
           </div>
 
-          <ScrollArea className="flex-1 p-6">
-            <div className="space-y-6 text-sm leading-relaxed text-foreground">
-              <section className="space-y-4 text-center">
-                <h3 className="text-3xl font-bold text-primary">
+          <ScrollArea className="flex-1 px-6 py-5">
+            <div className="space-y-8 text-base leading-relaxed text-foreground max-w-4xl mx-auto">
+              <section className="space-y-5 text-center">
+                <h3 className="text-3xl font-bold text-primary leading-tight">
                   더 나은 내일, 지속가능한 미래를 만들어 나가겠습니다.
                 </h3>
-                <p>
-                  광동제약은 『건강을 위한 혁신, 지속가능한 미래』라는 비전을 바탕으로, ESG 원칙을 준수하고 있습니다.
-                  우리는 지속 가능한 혁신적인 제품과 서비스를 창출하며, 모든 이해관계자와 함께 미래를 만들어 나가겠습니다.
+                <p className="leading-7">
+                  광동제약은 『건강을 위한 혁신, 지속가능한 미래』라는 비전을 바탕으로 ESG 원칙을 준수하며, 모든 이해관계자와 함께
+                  미래를 만들어 나가고 있습니다. 우리는 지속 가능한 혁신 제품과 서비스를 통해 사회적 가치를 창출하고, 공정한
+                  사업 환경을 위한 공급망 상생경영을 실천합니다.
                 </p>
-                <p>
-                  건강을 위한 혁신을 통해 고품질 제품을 제공하고, 지속 가능한 미래를 위해 기후변화에 대응하는 친환경 경영을
-                  실천하며, 사회적 책임을 다하는 기업으로서 지역사회와의 협력과 다양한 사회공헌 활동을 통해 사회적 가치를
-                  창출하고 공정한 사업 환경을 위해 공급망 관리를 통한 상생경영을 실천하겠습니다.
-                </p>
-                <p>
-                  광동제약은 지속가능한 경영을 통해 더 나은 내일을 위한 초석을 다지며, 모두의 건강한 미래를 향해 나아가겠습니다.
+                <p className="leading-7">
+                  건강을 위한 혁신으로 고품질 제품을 제공하고, 기후변화에 대응하는 친환경 경영과 지역사회와의 협력을 통해 사회적
+                  책임을 다하며, 모두의 건강한 미래를 향해 나아가겠습니다.
                 </p>
               </section>
 
               <section className="space-y-6">
-                <div className="space-y-3 text-center">
-                  <h4 className="text-2xl font-bold">안전보건경영 방침</h4>
-                  <p>
+                <div className="space-y-4 text-center">
+                  <h4 className="text-2xl font-bold leading-tight">안전보건경영 방침</h4>
+                  <p className="leading-7 text-left">
                     광동제약(주)은 인간존중의 철학과 고객의 건강한 삶에 기여한다는 경영이념에 따라 안전·보건 관리가
                     지속가능경영의 필수요소임을 인식하고, 모든 임직원이 안전하고 쾌적한 근무환경을 누릴 수 있도록 다음과 같은
-                    안전보건활동을 지속한다.
+                    안전보건활동을 지속합니다.
                   </p>
                 </div>
 
-                <ol className="space-y-4">
+                <ol className="space-y-5 text-left">
                   {[
                     "모든 활동영역에서 안전보건을 최우선 가치로 인식하고, 안전보건 경영체계를 확립한다.",
                     "안전보건 관련 법과 규정 및 기타 요구사항을 준수한다.",
@@ -81,7 +78,7 @@ export function SafetyGuidelineDialog({
                     "모든 구성원이 안전보건활동에 대한 책임자임을 인식하며, 체계적 교육·훈련을 통해 성숙한 안전문화 정착을 추구한다.",
                     "당사와의 협력관계에 있는 모든 공급자와 계약자가 상호존중을 바탕으로 안전보건협력 체계를 유지한다.",
                   ].map((text, index) => (
-                    <li key={text} className="flex items-start gap-3">
+                    <li key={text} className="flex items-start gap-3 leading-7">
                       <span className="text-primary font-bold text-lg mt-0.5">
                         {index + 1}.
                       </span>
@@ -90,7 +87,7 @@ export function SafetyGuidelineDialog({
                   ))}
                 </ol>
 
-                <div className="text-right text-base font-semibold text-muted-foreground">
+                <div className="text-right text-base font-semibold text-muted-foreground leading-7">
                   광동제약㈜ 대표이사 회장{" "}
                   <span className="text-primary">최 성 원</span>
                 </div>
