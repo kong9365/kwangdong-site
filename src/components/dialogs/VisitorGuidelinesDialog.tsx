@@ -21,7 +21,7 @@ export function VisitorGuidelinesDialog({
   return (
     <Dialog open={open} onOpenChange={() => {}} modal={true}>
       <DialogContent 
-        className="max-w-md max-h-[90vh] p-0 left-[50%] translate-x-[-50%] translate-y-[-50%] top-[50%] z-[60]"
+        className="max-w-md max-h-[90vh] p-0 left-[50%] translate-x-[-50%] translate-y-[-50%] top-[50%] z-[60] [&>button]:hidden"
         onInteractOutside={(e) => {
           // 배경 클릭 시 닫히지 않도록 방지
           e.preventDefault();
