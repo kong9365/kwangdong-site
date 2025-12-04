@@ -31,20 +31,20 @@ export function Header() {
   };
 
   return (
-    <header className="bg-white border-b border-border sticky top-0 z-50 shadow-sm relative">
-      {/* Logo - 왼쪽 가장자리에 배치 */}
-      <div className="absolute left-0 top-0 bg-white h-16 px-4 sm:px-6 flex items-center z-10">
-        <Link to="/" className="flex items-center">
-          <img 
-            src={kwangdongLogo} 
-            alt="광동제약" 
-            className="h-10 sm:h-12 w-auto"
-          />
-        </Link>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ml-0 sm:ml-[180px]">
+    <header className="bg-white border-b border-border sticky top-0 z-50 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <Link to="/" className="flex items-center">
+              <img 
+                src={kwangdongLogo} 
+                alt="광동제약" 
+                className="h-10 sm:h-12 w-auto"
+              />
+            </Link>
+          </div>
+
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {navigationItems.map((item) => (

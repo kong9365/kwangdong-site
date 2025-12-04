@@ -32,17 +32,17 @@ export function ProcedureSection() {
   return (
     <section className="bg-muted py-4 sm:py-6 flex-shrink-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-8">
-          {/* Title - Left */}
-          <div className="flex-shrink-0">
+        <div className="flex flex-col items-center gap-6">
+          {/* Title - Center */}
+          <div className="text-center">
             <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-1">Procedure</p>
             <h2 className="text-xl sm:text-2xl font-bold text-foreground">
               방문절차안내
             </h2>
           </div>
 
-          {/* Steps - Right */}
-          <div className="flex-1 flex items-center justify-center lg:justify-end gap-2 sm:gap-4 flex-wrap">
+          {/* Steps - Center */}
+          <div className="flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
             {PROCEDURE_STEPS.map((step, index) => {
               const Icon = step.icon;
               return (
