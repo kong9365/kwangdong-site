@@ -21,7 +21,7 @@ export function VisitorGuidelinesDialog({
   return (
     <Dialog open={open} onOpenChange={() => {}} modal={true}>
       <DialogContent 
-        className="max-w-md max-h-[90vh] w-[95vw] sm:w-full p-0 left-[50%] translate-x-[-50%] translate-y-[-50%] top-[50%] z-[60] [&>button]:hidden flex flex-col"
+        className="max-w-md max-h-[90vh] w-[95vw] sm:w-full p-0 left-[50%] translate-x-[-50%] translate-y-[-50%] top-[50%] z-[60] [&>button]:hidden"
         onInteractOutside={(e) => {
           // 배경 클릭 시 닫히지 않도록 방지
           e.preventDefault();
@@ -32,11 +32,11 @@ export function VisitorGuidelinesDialog({
         }}
       >
         <div className="flex flex-col h-full max-h-[90vh]">
-          <div className="border-b p-4 bg-primary text-primary-foreground flex-shrink-0">
+          <div className="border-b p-4 bg-primary text-primary-foreground">
             <h2 className="text-xl font-bold text-center">방문자 준수사항</h2>
           </div>
 
-          <ScrollArea className="flex-1 min-h-0 p-4 sm:p-6">
+          <ScrollArea className="flex-1">
             <div className="space-y-6 text-sm leading-relaxed">
               {/* 안내 사항 */}
               <div>
@@ -89,7 +89,7 @@ export function VisitorGuidelinesDialog({
             </div>
           </ScrollArea>
 
-          <div className="border-t p-4 bg-background flex-shrink-0 sticky bottom-0">
+          <div className="border-t p-4">
             <Button onClick={handleClose} className="w-full bg-primary hover:bg-primary/90">
               확인
             </Button>
