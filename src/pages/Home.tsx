@@ -32,12 +32,12 @@ export default function Home() {
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: "url('/본사 전경_wide.jpg')",
+              backgroundImage: "url('/신사옥 이미지.jpg')",
               backgroundSize: "cover",
-              backgroundPosition: "center top", // 건물 상단이 더 많이 보이도록
+              backgroundPosition: "center 20%",
               backgroundRepeat: "no-repeat",
               filter: "blur(3px)",
-              transform: "scale(0.9)", // 이미지 축소로 건물 전체가 더 많이 보이도록
+              transform: "scale(1.05)", // 블러로 인한 여백 보정
             }}
           />
           
