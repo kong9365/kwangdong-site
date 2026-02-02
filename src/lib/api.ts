@@ -626,7 +626,7 @@ export async function deleteFAQ(id: string) {
   if (error) throw error;
 }
 
-// 문자 알림 전송 (Supabase Edge Function 호출 또는 외부 API)
+// 문자 알림 전송 (Vercel API /api/send-sms → SOLAPI)
 export async function sendSMSNotification(
   visitRequestId: string,
   phoneNumber: string,
@@ -646,57 +646,42 @@ export async function sendSMSNotification(
 
   if (logError) throw logError;
 
-  try {
-    // 실제 문자 전송 API 호출 (예: 알리고, 카카오톡 등)
-    // 여기서는 Supabase Edge Function을 호출하는 것으로 가정
-    // 실제 구현 시 외부 SMS API 연동 필요
-    const { data: functionData, error: functionError } = await (supabase as any).functions.invoke(
-      "send-sms",
-      {
-        body: {
-          phone: phoneNumber,
-          message,
-          logId: logData.id,
-        },
-      }
-    );
-
-    if (functionError) {
-      // Edge Function이 없어도 로그는 저장됨
-      console.warn("SMS Edge Function 호출 실패:", functionError);
-    }
-
-    // 성공 시 로그 업데이트
+  const updateLog = async (status: "SENT" | "FAILED", errorMessage?: string) => {
     try {
       await (supabase as any)
         .from("sms_notifications")
         .update({
-          status: "SENT",
-          sent_at: new Date().toISOString(),
+          status,
+          ...(status === "SENT" ? { sent_at: new Date().toISOString() } : { error_message: errorMessage }),
         })
         .eq("id", logData.id);
-    } catch (updateError) {
-      console.warn("SMS 성공 로그 업데이트 실패:", updateError);
+    } catch (e) {
+      console.warn("SMS 로그 업데이트 실패:", e);
+    }
+  };
+
+  try {
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const res = await fetch(`${baseUrl}/api/send-sms`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: phoneNumber, message }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok && data.success) {
+      await updateLog("SENT");
+      return { success: true, logId: logData.id };
     }
 
-    return { success: true, logId: logData.id };
+    const errorMsg = data.error || `HTTP ${res.status}`;
+    await updateLog("FAILED", errorMsg);
+    console.error("SMS 전송 실패:", errorMsg);
+    return { success: false, logId: logData.id, error: errorMsg };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류";
-
-    // 실패 시 로그 업데이트
-    try {
-      await (supabase as any)
-        .from("sms_notifications")
-        .update({
-          status: "FAILED",
-          error_message: errorMessage,
-        })
-        .eq("id", logData.id);
-    } catch (updateError) {
-      console.warn("SMS 실패 로그 업데이트 실패:", updateError);
-    }
-
-    // 문자 전송 실패해도 예외를 던지지 않음 (로그만 저장)
+    await updateLog("FAILED", errorMessage);
     console.error("SMS 전송 실패:", error);
     return { success: false, logId: logData.id, error: errorMessage };
   }

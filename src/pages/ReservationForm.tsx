@@ -43,6 +43,11 @@ import {
   setFormStarted,
   clearReservationFlowState,
 } from "@/lib/reservationFlow";
+import { createVisitRequest, sendSMSNotification } from "@/lib/api";
+import {
+  buildReservationReceivedMessage,
+  formatVisitDate,
+} from "@/lib/smsMessages";
 
 const AGREEMENT_STEPS = [
   { num: 1, label: "약관동의", active: false },
@@ -302,9 +307,6 @@ export default function ReservationForm() {
     setSubmitting(true);
 
     try {
-      // Supabase에 저장
-      const { createVisitRequest } = await import("@/lib/api");
-      
       const visitRequest = await createVisitRequest({
         company: values.visitorCompany,
         department: values.department || "",
@@ -326,6 +328,22 @@ export default function ReservationForm() {
         title: "방문예약 신청 완료",
         description: `예약번호: ${visitRequest.reservation_number}. 담당자 승인 후 문자메시지로 안내드리겠습니다.`,
       });
+
+      // 예약 접수 완료 문자 발송 (첫 번째 방문자에게)
+      if (visitors.length > 0) {
+        const firstPhone = visitors[0].phone1 + visitors[0].phone2 + visitors[0].phone3;
+        const message = buildReservationReceivedMessage({
+          managerName: selectedManager?.name || values.manager || "-",
+          visitDate: formatVisitDate(values.startDate),
+          endDate: values.endDate ? formatVisitDate(values.endDate) : null,
+          reservationNumber: visitRequest.reservation_number || "",
+        });
+        try {
+          await sendSMSNotification(visitRequest.id, firstPhone, message);
+        } catch (smsError) {
+          console.error("예약 접수 문자 발송 오류:", smsError);
+        }
+      }
 
       // 예약 플로우 상태 초기화 및 완료 페이지로 이동
       setIsFormDirty(false);

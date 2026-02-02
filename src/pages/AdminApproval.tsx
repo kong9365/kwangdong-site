@@ -30,6 +30,11 @@ import {
   rejectVisitRequest,
   sendSMSNotification,
 } from "@/lib/api";
+import {
+  buildApprovalCompleteMessage,
+  buildRejectionMessage,
+  formatVisitDate,
+} from "@/lib/smsMessages";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -45,6 +50,7 @@ interface VisitRequest {
   end_date?: string;
   status: string;
   created_at?: string;
+  manager_name?: string | null;
   qr_code_id?: string;
   qr_code_url?: string;
   qr_code_data?: string;
@@ -170,10 +176,22 @@ export default function AdminApproval() {
         } as VisitRequest);
       }
 
-      // 승인 완료 문자 전송
-      if (request.visitor_info && request.visitor_info.length > 0) {
+      // 승인 완료 문자 전송 (approvedData 또는 updatedRequestData에서 QR URL 사용)
+      const qrSource = approvedData || updatedRequestData;
+      if (request.visitor_info && request.visitor_info.length > 0 && qrSource) {
         const phone = request.visitor_info[0].visitor_phone;
-        const message = `[광동제약] 방문예약이 승인되었습니다. 예약번호: ${request.reservation_number}. 방문일: ${format(new Date(request.visit_date), "yyyy년 M월 d일", { locale: ko })}`;
+        const qrCodeUrl =
+          (qrSource as any).qr_code_url ||
+          ((qrSource as any).qr_code_id
+            ? `${window.location.origin}/qr/${(qrSource as any).qr_code_id}`
+            : "");
+        const message = buildApprovalCompleteMessage({
+          managerName: request.manager_name || "-",
+          visitDate: formatVisitDate(request.visit_date),
+          endDate: request.end_date ? formatVisitDate(request.end_date) : null,
+          reservationNumber: request.reservation_number || "",
+          qrCodeUrl,
+        });
 
         try {
           await sendSMSNotification(request.id, phone, message);
@@ -223,7 +241,10 @@ export default function AdminApproval() {
         selectedRequest.visitor_info.length > 0
       ) {
         const phone = selectedRequest.visitor_info[0].visitor_phone;
-        const message = `[광동제약] 방문예약이 반려되었습니다. 예약번호: ${selectedRequest.reservation_number}. 사유: ${rejectReason}`;
+        const message = buildRejectionMessage({
+          reservationNumber: selectedRequest.reservation_number || "",
+          reason: rejectReason,
+        });
 
         try {
           await sendSMSNotification(
