@@ -49,8 +49,8 @@ export default async function handler(req, res) {
       });
     }
 
-    // HMAC-SHA256 인증 헤더 생성
-    const date = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
+    // HMAC-SHA256 인증 헤더 생성 (공식 Node.js 예제와 동일)
+    const date = new Date().toISOString();
     const salt = generateSalt();
     const signature = createSignature(date, salt, apiSecret);
     const authHeader = `HMAC-SHA256 apiKey=${apiKey}, date=${date}, salt=${salt}, signature=${signature}`;

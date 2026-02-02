@@ -46,3 +46,29 @@ npx vercel dev
 ## 5. 발송 로그
 
 Supabase `sms_notifications` 테이블에서 발송 내역을 확인할 수 있습니다.
+
+## 6. 문자 미발송 시 점검
+
+### 6-1. 브라우저 개발자 도구 (F12) → Network 탭
+
+1. 예약 완료 또는 승인 시 `send-sms` 요청 확인
+2. 요청이 **404** → Vercel 배포/rewrite 설정 확인
+3. 요청이 **500** → Response 탭에서 `error` 메시지 확인
+
+### 6-2. Supabase `sms_notifications` 테이블
+
+| status | 의미 |
+|--------|------|
+| PENDING | API 호출 전 또는 응답 대기 |
+| SENT | 발송 성공 |
+| FAILED | 발송 실패 (`error_message` 컬럼 확인) |
+
+### 6-3. Vercel Functions 로그
+
+Vercel 대시보드 → Logs → Request Path에 `send-sms` 필터 → 에러 메시지 확인
+
+### 6-4. SOLAPI 점검
+
+- **발신번호**: [솔라피 콘솔](https://console.solapi.com/senderids)에서 등록·승인 완료 여부 확인
+- **API Key**: 콘솔에서 재발급 후 Vercel 환경 변수 업데이트 → **Redeploy** 필요
+- **에러 코드**: `InvalidAPIKey`(403), `SignatureDoesNotMatch`(403), `RequestTimeTooSkewed`(403) 등

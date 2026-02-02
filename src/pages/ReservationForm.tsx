@@ -314,7 +314,7 @@ export default function ReservationForm() {
         visit_date: format(values.startDate, "yyyy-MM-dd"),
         end_date: values.endDate ? format(values.endDate, "yyyy-MM-dd") : null,
         visitor_company: values.visitorCompany,
-        requester_id: "anonymous", // 로그인 구현 시 실제 사용자 ID 사용
+        requester_id: null, // 비로그인 공개 예약 (로그인 구현 시 supabase.auth.getUser()로 설정)
         manager_name: selectedManager?.name || values.manager || null,
         manager_phone: selectedManager?.phone || null,
         visitors: visitors.map((v) => ({
@@ -339,9 +339,21 @@ export default function ReservationForm() {
           reservationNumber: visitRequest.reservation_number || "",
         });
         try {
-          await sendSMSNotification(visitRequest.id, firstPhone, message);
+          const smsResult = await sendSMSNotification(visitRequest.id, firstPhone, message);
+          if (!smsResult.success) {
+            toast({
+              title: "문자 발송 실패",
+              description: smsResult.error || "예약 접수 문자를 보내지 못했습니다.",
+              variant: "destructive",
+            });
+          }
         } catch (smsError) {
           console.error("예약 접수 문자 발송 오류:", smsError);
+          toast({
+            title: "문자 발송 오류",
+            description: smsError instanceof Error ? smsError.message : "문자 발송 중 오류가 발생했습니다.",
+            variant: "destructive",
+          });
         }
       }
 

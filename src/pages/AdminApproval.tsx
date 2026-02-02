@@ -194,10 +194,21 @@ export default function AdminApproval() {
         });
 
         try {
-          await sendSMSNotification(request.id, phone, message);
+          const smsResult = await sendSMSNotification(request.id, phone, message);
+          if (!smsResult.success) {
+            toast({
+              title: "문자 발송 실패",
+              description: smsResult.error || "승인 완료 문자를 보내지 못했습니다.",
+              variant: "destructive",
+            });
+          }
         } catch (smsError) {
           console.error("문자 전송 오류:", smsError);
-          // 문자 전송 실패해도 승인은 완료
+          toast({
+            title: "문자 발송 오류",
+            description: smsError instanceof Error ? smsError.message : "문자 발송 중 오류가 발생했습니다.",
+            variant: "destructive",
+          });
         }
       }
 
@@ -247,13 +258,25 @@ export default function AdminApproval() {
         });
 
         try {
-          await sendSMSNotification(
+          const smsResult = await sendSMSNotification(
             selectedRequest.id,
             phone,
             message
           );
+          if (!smsResult.success) {
+            toast({
+              title: "문자 발송 실패",
+              description: smsResult.error || "반려 안내 문자를 보내지 못했습니다.",
+              variant: "destructive",
+            });
+          }
         } catch (smsError) {
           console.error("문자 전송 오류:", smsError);
+          toast({
+            title: "문자 발송 오류",
+            description: smsError instanceof Error ? smsError.message : "문자 발송 중 오류가 발생했습니다.",
+            variant: "destructive",
+          });
         }
       }
 
