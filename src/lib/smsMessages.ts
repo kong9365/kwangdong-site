@@ -1,6 +1,5 @@
 /**
  * 광동제약 방문예약 SMS 메시지 템플릿
- * 한미제약 예시 구조를 참고하여 광동제약에 맞게 구성
  */
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";

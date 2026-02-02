@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { searchVisitRequests } from "@/lib/api";
+import { searchVisitRequestByReservationNumber } from "@/lib/api";
 
 export default function ReservationComplete() {
   const navigate = useNavigate();
@@ -25,14 +25,12 @@ export default function ReservationComplete() {
 
   const loadVisitRequest = async () => {
     if (!reservationNumber) return;
-    
+
     setLoading(true);
     try {
-      // 예약번호로 검색 (방문자명과 전화번호는 임시로 빈 값 사용)
-      // 실제로는 예약 완료 시점에 이미 정보를 가지고 있으므로 다른 방법 사용 가능
-      const data = await searchVisitRequests("", "", reservationNumber);
-      if (data && data.length > 0) {
-        setVisitRequest(data[0]);
+      const data = await searchVisitRequestByReservationNumber(reservationNumber);
+      if (data) {
+        setVisitRequest(data);
       }
     } catch (error) {
       console.error("예약 정보 로드 실패:", error);
@@ -97,20 +95,19 @@ export default function ReservationComplete() {
                   담당자 승인 후 문자메시지로 방문 확정 안내를 드리겠습니다.
                 </p>
                 <p className="text-sm">
-                  승인 완료 시 QR코드가 포함된 문자가 발송됩니다.
+                  승인 완료 시 QR코드 링크가 포함된 문자가 발송됩니다.
                 </p>
                 {reservationNumber && (
                   <p className="text-sm font-medium text-foreground mt-4">
-                    예약번호로 예약현황을 조회하실 수 있습니다.
+                    예약현황 조회에서 방문자명, 전화번호, 예약번호를 입력하시면
+                    예약 상태를 확인할 수 있습니다.
                   </p>
                 )}
               </div>
 
               {/* Info Box */}
               <div className="bg-muted rounded-lg p-6 space-y-3 mb-8">
-                <h3 className="font-semibold text-lg mb-4">
-                  다음 단계 안내
-                </h3>
+                <h3 className="font-semibold text-lg mb-4">다음 단계 안내</h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex gap-3">
                     <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
@@ -128,9 +125,9 @@ export default function ReservationComplete() {
                       2
                     </span>
                     <div>
-                      <p className="font-medium">방문자 정보 입력</p>
+                      <p className="font-medium">승인 문자 수신</p>
                       <p className="text-muted-foreground">
-                        승인 후 방문자 상세 정보를 입력하시면 됩니다.
+                        승인 시 문자의 QR 링크를 클릭하면 QR 코드가 표시됩니다.
                       </p>
                     </div>
                   </div>
@@ -141,7 +138,7 @@ export default function ReservationComplete() {
                     <div>
                       <p className="font-medium">방문 당일</p>
                       <p className="text-muted-foreground">
-                        받으신 QR코드를 이용하여 방문해주세요.
+                        안내데스크에서 QR 코드를 제시해 주세요.
                       </p>
                     </div>
                   </div>
@@ -178,8 +175,9 @@ export default function ReservationComplete() {
               {/* Notice */}
               <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-8">
                 <p className="text-sm text-amber-900 dark:text-amber-200">
-                  <strong>안내사항:</strong> 방문 전 반드시 안전보건지침을
-                  숙지하시고, 방문 당일 신분증을 지참해주시기 바랍니다.
+                  <strong>안내사항:</strong> 방문 전 안전보건지침을 숙지하시고,
+                  방문 당일 신분증을 지참해 주세요. 개인 차량 이용 시
+                  주차장(경비실)에서 안내받으실 수 있습니다.
                 </p>
               </div>
 

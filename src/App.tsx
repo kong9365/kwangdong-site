@@ -35,7 +35,7 @@ const App = () => (
           <Route path="/progress/view" element={<ProgressView />} />
           {/* 방문수속 경로는 임직원모드로 리다이렉트 */}
           <Route path="/visit/checkin" element={<Navigate to="/employee?tab=checkin" replace />} />
-          {/* QR 전용 페이지: 방문객이 문자 링크 클릭 시 QR 코드 표시 (한미약품 방식) */}
+          {/* QR 전용 페이지: 방문객이 문자 링크 클릭 시 QR 코드 표시 */}
           <Route path="/qr/:id" element={<QrDisplay />} />
           <Route path="/employee" element={<EmployeeDashboard />} />
           <Route path="/admin/approval" element={<AdminApproval />} />

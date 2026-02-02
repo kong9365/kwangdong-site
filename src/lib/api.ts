@@ -336,7 +336,7 @@ export async function approveVisitRequest(id: string, approvedBy: string) {
   // QR 코드 ID 생성 (UUID)
   const qrCodeId = crypto.randomUUID();
   
-  // QR 코드 URL 생성 (한미제약 방식: /qr/{uuid})
+  // QR 코드 URL 생성: /qr/{uuid}
   const qrCodeUrl = `${window.location.origin}/qr/${qrCodeId}`;
 
   // 승인 처리 및 QR 코드 저장
