@@ -445,8 +445,9 @@ export async function decodeQRCode(encryptedData: string) {
     }
     
     return { qrData, visitRequest };
-  } catch (error: any) {
-    throw new Error("QR 코드 디코딩 실패: " + error.message);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류";
+    throw new Error("QR 코드 디코딩 실패: " + errorMessage);
   }
 }
 
@@ -490,11 +491,15 @@ export async function getNotice(id: string) {
 
   if (error) throw error;
 
-  // 조회수 증가
-  await (supabase as any)
-    .from("notices")
-    .update({ view_count: (data.view_count || 0) + 1 })
-    .eq("id", id);
+  // 조회수 증가 (에러 발생해도 메인 로직에 영향 없도록 처리)
+  try {
+    await (supabase as any)
+      .from("notices")
+      .update({ view_count: (data.view_count || 0) + 1 })
+      .eq("id", id);
+  } catch (viewCountError) {
+    console.warn("조회수 업데이트 실패:", viewCountError);
+  }
 
   return data;
 }
@@ -662,27 +667,37 @@ export async function sendSMSNotification(
     }
 
     // 성공 시 로그 업데이트
-    await (supabase as any)
-      .from("sms_notifications")
-      .update({
-        status: "SENT",
-        sent_at: new Date().toISOString(),
-      })
-      .eq("id", logData.id);
+    try {
+      await (supabase as any)
+        .from("sms_notifications")
+        .update({
+          status: "SENT",
+          sent_at: new Date().toISOString(),
+        })
+        .eq("id", logData.id);
+    } catch (updateError) {
+      console.warn("SMS 성공 로그 업데이트 실패:", updateError);
+    }
 
     return { success: true, logId: logData.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류";
+
     // 실패 시 로그 업데이트
-    await (supabase as any)
-      .from("sms_notifications")
-      .update({
-        status: "FAILED",
-        error_message: error.message,
-      })
-      .eq("id", logData.id);
+    try {
+      await (supabase as any)
+        .from("sms_notifications")
+        .update({
+          status: "FAILED",
+          error_message: errorMessage,
+        })
+        .eq("id", logData.id);
+    } catch (updateError) {
+      console.warn("SMS 실패 로그 업데이트 실패:", updateError);
+    }
 
     // 문자 전송 실패해도 예외를 던지지 않음 (로그만 저장)
     console.error("SMS 전송 실패:", error);
-    return { success: false, logId: logData.id, error: error.message };
+    return { success: false, logId: logData.id, error: errorMessage };
   }
 }

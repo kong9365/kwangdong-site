@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -38,6 +38,11 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import {
+  validateReservationFlow,
+  setFormStarted,
+  clearReservationFlowState,
+} from "@/lib/reservationFlow";
 
 const AGREEMENT_STEPS = [
   { num: 1, label: "약관동의", active: false },
@@ -129,6 +134,49 @@ export default function ReservationForm() {
   const [submitting, setSubmitting] = useState(false);
   const [visitorAddConsentOpen, setVisitorAddConsentOpen] = useState(false);
   const [hasShownVisitorAddConsent, setHasShownVisitorAddConsent] = useState(false);
+  const [isFormDirty, setIsFormDirty] = useState(false);
+
+  // 플로우 유효성 검사 - 공장 선택 및 약관 동의 확인
+  useEffect(() => {
+    const validation = validateReservationFlow();
+    if (!validation.isValid && validation.redirectTo) {
+      toast({
+        title: "접근 불가",
+        description: validation.message || "예약 절차를 처음부터 진행해주세요.",
+        variant: "destructive",
+      });
+      navigate(validation.redirectTo, { replace: true });
+    } else {
+      setFormStarted();
+    }
+  }, [navigate, toast]);
+
+  // 페이지 이탈 경고 (beforeunload)
+  const handleBeforeUnload = useCallback(
+    (e: BeforeUnloadEvent) => {
+      if (isFormDirty && !submitting) {
+        e.preventDefault();
+        e.returnValue = "작성 중인 내용이 있습니다. 페이지를 떠나시겠습니까?";
+        return e.returnValue;
+      }
+    },
+    [isFormDirty, submitting]
+  );
+
+  useEffect(() => {
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [handleBeforeUnload]);
+
+  // 폼 변경 감지
+  useEffect(() => {
+    const hasVisitorData = visitors.some(
+      (v) => v.name.trim() || v.phone2.trim() || v.phone3.trim() || v.carNumber.trim()
+    );
+    setIsFormDirty(hasVisitorData);
+  }, [visitors]);
 
   // Show both dialogs on first load
   useEffect(() => {
@@ -279,7 +327,9 @@ export default function ReservationForm() {
         description: `예약번호: ${visitRequest.reservation_number}. 담당자 승인 후 문자메시지로 안내드리겠습니다.`,
       });
 
-      // Navigate to completion page with reservation number
+      // 예약 플로우 상태 초기화 및 완료 페이지로 이동
+      setIsFormDirty(false);
+      clearReservationFlowState();
       navigate(`/reservation/complete?reservation=${visitRequest.reservation_number}`);
     } catch (error: any) {
       console.error("예약 신청 오류:", error);
@@ -716,97 +766,125 @@ export default function ReservationForm() {
                   {visitors.map((visitor, index) => (
                     <div
                       key={index}
-                      className="border border-border rounded-lg p-4 space-y-3"
+                      className="border border-border rounded-xl p-4 space-y-4 bg-muted/30"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">
+                        <span className="text-base font-semibold text-primary">
                           방문자 {index + 1}
                         </span>
                         <Button
                           type="button"
                           variant="ghost"
-                          size="sm"
+                          size="icon"
                           onClick={() => removeVisitor(index)}
+                          className="h-10 w-10 text-muted-foreground hover:text-destructive"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </Button>
                       </div>
-                      <Input
-                        value={visitor.name}
-                        onChange={(e) =>
-                          updateVisitor(index, "name", e.target.value)
-                        }
-                        placeholder="성함"
-                      />
-                      <div className="flex items-center gap-2">
-                        <Select
-                          value={visitor.phone1}
-                          onValueChange={(value) =>
-                            updateVisitor(index, "phone1", value)
-                          }
-                        >
-                          <SelectTrigger className="w-20">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="010">010</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <span>-</span>
+
+                      {/* 이름 입력 */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">이름 *</label>
                         <Input
-                          value={visitor.phone2}
+                          value={visitor.name}
                           onChange={(e) =>
-                            updateVisitor(
-                              index,
-                              "phone2",
-                              e.target.value.replace(/\D/g, "")
-                            )
+                            updateVisitor(index, "name", e.target.value)
                           }
-                          maxLength={4}
-                          placeholder="0000"
-                          className="flex-1"
-                        />
-                        <span>-</span>
-                        <Input
-                          value={visitor.phone3}
-                          onChange={(e) =>
-                            updateVisitor(
-                              index,
-                              "phone3",
-                              e.target.value.replace(/\D/g, "")
-                            )
-                          }
-                          maxLength={4}
-                          placeholder="0000"
-                          className="flex-1"
+                          placeholder="방문자 성함을 입력하세요"
+                          className="text-base"
                         />
                       </div>
-                      <Input
-                        value={visitor.carNumber}
-                        onChange={(e) =>
-                          updateVisitor(index, "carNumber", e.target.value)
-                        }
-                        maxLength={10}
-                        placeholder="차량번호"
-                      />
-                      <div className="flex items-center gap-4">
-                        <label className="flex items-center gap-2 text-sm">
+
+                      {/* 연락처 입력 */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">연락처 *</label>
+                        <div className="flex items-center gap-2">
+                          <Select
+                            value={visitor.phone1}
+                            onValueChange={(value) =>
+                              updateVisitor(index, "phone1", value)
+                            }
+                          >
+                            <SelectTrigger className="w-[80px] h-11">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="010">010</SelectItem>
+                              <SelectItem value="011">011</SelectItem>
+                              <SelectItem value="016">016</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <span className="text-muted-foreground">-</span>
+                          <Input
+                            value={visitor.phone2}
+                            onChange={(e) =>
+                              updateVisitor(
+                                index,
+                                "phone2",
+                                e.target.value.replace(/\D/g, "")
+                              )
+                            }
+                            maxLength={4}
+                            placeholder="0000"
+                            inputMode="numeric"
+                            className="flex-1 text-center"
+                          />
+                          <span className="text-muted-foreground">-</span>
+                          <Input
+                            value={visitor.phone3}
+                            onChange={(e) =>
+                              updateVisitor(
+                                index,
+                                "phone3",
+                                e.target.value.replace(/\D/g, "")
+                              )
+                            }
+                            maxLength={4}
+                            placeholder="0000"
+                            inputMode="numeric"
+                            className="flex-1 text-center"
+                          />
+                        </div>
+                      </div>
+
+                      {/* 차량번호 입력 */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">차량번호 (선택)</label>
+                        <Input
+                          value={visitor.carNumber}
+                          onChange={(e) =>
+                            updateVisitor(index, "carNumber", e.target.value)
+                          }
+                          maxLength={10}
+                          placeholder="예: 12가3456"
+                          className="text-base"
+                        />
+                      </div>
+
+                      {/* 동의 체크박스 */}
+                      <div className="space-y-3 pt-2 border-t border-border">
+                        <label className="flex items-center gap-3 p-3 -mx-3 rounded-lg tap-highlight cursor-pointer">
                           <Checkbox
                             checked={visitor.privacyAgreed}
                             onCheckedChange={(checked) =>
                               updateVisitor(index, "privacyAgreed", checked)
                             }
+                            className="h-5 w-5"
                           />
-                          개인정보 수집 동의
+                          <span className="text-sm flex-1">개인정보 수집 동의 (선택)</span>
                         </label>
-                        <label className="flex items-center gap-2 text-sm">
+                        <label className="flex items-center gap-3 p-3 -mx-3 rounded-lg tap-highlight cursor-pointer">
                           <Checkbox
                             checked={visitor.safetyAgreed}
                             onCheckedChange={(checked) =>
                               updateVisitor(index, "safetyAgreed", checked)
                             }
+                            className="h-5 w-5"
                           />
-                          안전보건 지침 동의
+                          <span className="text-sm flex-1">
+                            안전보건 지침 동의 <span className="text-destructive">*</span>
+                          </span>
                         </label>
                       </div>
                     </div>
@@ -818,19 +896,20 @@ export default function ReservationForm() {
                     type="button"
                     variant="outline"
                     onClick={addVisitor}
-                    className="gap-2"
+                    className="gap-2 w-full sm:w-auto"
+                    size="lg"
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-5 h-5" />
                     방문자 추가
                   </Button>
                 </div>
               </div>
 
-              {/* Submit Button */}
-              <div className="flex justify-center">
-                <Button 
-                  type="submit" 
-                  size="lg" 
+              {/* Submit Button - Desktop */}
+              <div className="hidden sm:flex justify-center pb-4">
+                <Button
+                  type="submit"
+                  size="lg"
                   className="w-full sm:w-64"
                   disabled={submitting}
                 >
@@ -844,8 +923,31 @@ export default function ReservationForm() {
                   )}
                 </Button>
               </div>
+
+              {/* Mobile bottom spacer */}
+              <div className="sm:hidden h-24" />
             </form>
           </Form>
+
+          {/* Submit Button - Mobile Sticky */}
+          <div className="sm:hidden sticky-bottom-action">
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full text-base font-semibold"
+              disabled={submitting}
+              onClick={form.handleSubmit(onSubmit)}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  신청 중...
+                </>
+              ) : (
+                "신청하기"
+              )}
+            </Button>
+          </div>
 
       {/* Dialogs */}
       <VisitorGuidelinesDialog

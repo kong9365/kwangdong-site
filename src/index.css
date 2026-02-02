@@ -12,16 +12,21 @@ All colors MUST be HSL.
   :root {
     /* 광동제약 브랜드 컬러 - KD Red & KD Black */
     --background: 0 0% 100%;
-    --foreground: 0 0% 0%; /* KD Black */
+    --foreground: 0 0% 0%;
+    /* KD Black */
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%; /* KD Black */
+    --card-foreground: 0 0% 0%;
+    /* KD Black */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%; /* KD Black */
+    --popover-foreground: 0 0% 0%;
+    /* KD Black */
 
-    --primary: 8 100% 50%; /* KD Red: #FF1A00 */
-    --primary-foreground: 0 0% 100%; /* 흰색 */
+    --primary: 8 100% 50%;
+    /* KD Red: #FF1A00 */
+    --primary-foreground: 0 0% 100%;
+    /* 흰색 */
 
     --secondary: 0 0% 20%;
     --secondary-foreground: 0 0% 100%;
@@ -30,7 +35,8 @@ All colors MUST be HSL.
     --muted-foreground: 0 0% 50%;
 
     --accent: 0 0% 96%;
-    --accent-foreground: 8 100% 50%; /* KD Red */
+    --accent-foreground: 8 100% 50%;
+    /* KD Red */
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -40,18 +46,21 @@ All colors MUST be HSL.
 
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 8 100% 50%; /* KD Red */
+    --ring: 8 100% 50%;
+    /* KD Red */
 
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 8 100% 50%; /* KD Red */
+    --sidebar-primary: 8 100% 50%;
+    /* KD Red */
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 96%;
     --sidebar-accent-foreground: 0 0% 0%;
     --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 8 100% 50%; /* KD Red */
+    --sidebar-ring: 8 100% 50%;
+    /* KD Red */
   }
 
   .dark {
@@ -64,7 +73,8 @@ All colors MUST be HSL.
     --popover: 0 0% 10%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 8 100% 50%; /* KD Red */
+    --primary: 8 100% 50%;
+    /* KD Red */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 20%;
@@ -84,16 +94,19 @@ All colors MUST be HSL.
 
     --border: 0 0% 20%;
     --input: 0 0% 20%;
-    --ring: 8 100% 50%; /* KD Red */
+    --ring: 8 100% 50%;
+    /* KD Red */
 
     --sidebar-background: 0 0% 10%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 8 100% 50%; /* KD Red */
+    --sidebar-primary: 8 100% 50%;
+    /* KD Red */
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 20%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 8 100% 50%; /* KD Red */
+    --sidebar-ring: 8 100% 50%;
+    /* KD Red */
   }
 }
 
@@ -105,5 +118,72 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
     font-family: 'Noto Sans KR', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Mobile optimizations */
+@layer utilities {
+  /* Sticky bottom action bar */
+  .sticky-bottom-action {
+    @apply fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)];
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Safe area padding for iOS */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Touch-friendly spacing */
+  .touch-spacing {
+    @apply py-3;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Improve tap feedback */
+  .tap-highlight {
+    @apply transition-colors duration-150;
+  }
+  .tap-highlight:active {
+    @apply bg-muted/50;
+  }
+
+  /* Mobile card improvements */
+  .mobile-card {
+    @apply border rounded-lg p-4 bg-card transition-shadow duration-200;
+  }
+  .mobile-card:active {
+    @apply shadow-md;
+  }
+}
+
+/* Prevent zoom on iOS when focusing inputs */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  input[type="text"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Improve touch scrolling */
+@supports (-webkit-overflow-scrolling: touch) {
+  .overflow-auto,
+  .overflow-y-auto,
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
   }
 }

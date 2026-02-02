@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getReservationFlowState, setAgreementCompleted } from "@/lib/reservationFlow";
+import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -21,12 +23,26 @@ const AGREEMENT_STEPS = [
 
 export default function Agreement() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [agreements, setAgreements] = useState({
     age14: false,
     terms: false,
     privacy: false,
     optionalPrivacy: false,
   });
+
+  // 공장 선택 여부 확인
+  useEffect(() => {
+    const flowState = getReservationFlowState();
+    if (!flowState.factory) {
+      toast({
+        title: "공장 선택 필요",
+        description: "공장 선택 정보가 없습니다. 방문예약 첫 화면으로 이동합니다.",
+        variant: "destructive",
+      });
+      navigate("/", { replace: true });
+    }
+  }, [navigate, toast]);
 
   const handleCheckAll = (checked: boolean) => {
     setAgreements({
@@ -48,6 +64,7 @@ export default function Agreement() {
 
   const handleSubmit = () => {
     if (isRequiredChecked) {
+      setAgreementCompleted();
       navigate("/reservation/form");
     }
   };

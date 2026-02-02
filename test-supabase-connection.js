@@ -105,6 +105,15 @@ try {
   }
 } catch (error) {
   console.error('❌ 연결 테스트 중 오류 발생:', error.message);
+  if (error.message?.includes('fetch failed') || error.cause?.code === 'UND_ERR_CONNECT_TIMEOUT') {
+    console.log('');
+    console.log('💡 "fetch failed" 오류 해결 방법:');
+    console.log('   1. Supabase 프로젝트 일시중지 여부 확인');
+    console.log('      → https://supabase.com/dashboard/project/' + (process.env.VITE_SUPABASE_PROJECT_ID || 'esrvexhyrpwwyjpjeuqi'));
+    console.log('      → 왼쪽 Settings > General > "Restore project" 클릭');
+    console.log('   2. 방화벽/백신 프로그램에서 supabase.co 차단 여부 확인');
+    console.log('   3. VPN 사용 중이면 해제 후 재시도');
+  }
   process.exit(1);
 }
 console.log('');

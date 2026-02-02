@@ -197,117 +197,117 @@ export default function ProgressView() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* 검색 섹션 */}
           <Card className="mb-6 shadow-sm border">
-            <CardHeader>
-              <CardTitle className="text-xl">방문자 정보</CardTitle>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg sm:text-xl">예약 조회</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                방문자 정보를 입력하여 예약 현황을 조회하세요
+              </p>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {/* 방문자명 */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">방문자명</label>
+            <CardContent className="space-y-4">
+              {/* 방문자명 */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">방문자명 *</label>
+                <Input
+                  placeholder="방문자 이름을 입력하세요"
+                  value={visitorName}
+                  onChange={(e) => setVisitorName(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch();
+                    }
+                  }}
+                />
+              </div>
+
+              {/* 전화번호 */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">전화번호 *</label>
+                <div className="flex items-center gap-2">
+                  <Select value={phone1} onValueChange={setPhone1}>
+                    <SelectTrigger className="w-[80px] h-11">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="010" className="py-3">010</SelectItem>
+                      <SelectItem value="011" className="py-3">011</SelectItem>
+                      <SelectItem value="016" className="py-3">016</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <span className="text-muted-foreground">-</span>
                   <Input
-                    placeholder="방문자명 입력"
-                    value={visitorName}
-                    onChange={(e) => setVisitorName(e.target.value)}
+                    placeholder="0000"
+                    value={phone2}
+                    onChange={(e) => setPhone2(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                    maxLength={4}
+                    inputMode="numeric"
+                    className="flex-1 text-center"
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
                         handleSearch();
                       }
                     }}
                   />
-                </div>
-
-                {/* 전화번호 */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">전화번호</label>
-                  <div className="flex items-center gap-2">
-                    <Select value={phone1} onValueChange={setPhone1}>
-                      <SelectTrigger className="w-20">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="010">010</SelectItem>
-                        <SelectItem value="011">011</SelectItem>
-                        <SelectItem value="016">016</SelectItem>
-                        <SelectItem value="017">017</SelectItem>
-                        <SelectItem value="018">018</SelectItem>
-                        <SelectItem value="019">019</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <span>-</span>
-                    <Input
-                      placeholder="0000"
-                      value={phone2}
-                      onChange={(e) => setPhone2(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                      maxLength={4}
-                      className="flex-1"
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                          handleSearch();
-                        }
-                      }}
-                    />
-                    <span>-</span>
-                    <Input
-                      placeholder="0000"
-                      value={phone3}
-                      onChange={(e) => setPhone3(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                      maxLength={4}
-                      className="flex-1"
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                          handleSearch();
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* 예약번호 */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">예약번호</label>
+                  <span className="text-muted-foreground">-</span>
                   <Input
-                    placeholder="예약번호 입력"
-                    value={reservationNumber}
-                    onChange={(e) => setReservationNumber(e.target.value.replace(/\D/g, "").slice(0, 5))}
-                    maxLength={5}
+                    placeholder="0000"
+                    value={phone3}
+                    onChange={(e) => setPhone3(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                    maxLength={4}
+                    inputMode="numeric"
+                    className="flex-1 text-center"
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
                         handleSearch();
                       }
                     }}
                   />
-                </div>
-
-                {/* 검색 버튼 */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium opacity-0">검색</label>
-                  <Button 
-                    onClick={handleSearch} 
-                    disabled={loading} 
-                    className="w-full"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        검색중
-                      </>
-                    ) : (
-                      <>
-                        <Search className="w-4 h-4 mr-2" />
-                        검색
-                      </>
-                    )}
-                  </Button>
                 </div>
               </div>
-              
+
+              {/* 예약번호 */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">예약번호 * (5자리)</label>
+                <Input
+                  placeholder="예약번호 5자리를 입력하세요"
+                  value={reservationNumber}
+                  onChange={(e) => setReservationNumber(e.target.value.replace(/\D/g, "").slice(0, 5))}
+                  maxLength={5}
+                  inputMode="numeric"
+                  className="font-mono text-center text-lg tracking-widest"
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch();
+                    }
+                  }}
+                />
+              </div>
+
               {error && (
-                <div className="mt-4 flex items-center gap-2 text-sm text-destructive">
-                  <XCircle className="w-4 h-4" />
+                <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-lg p-3">
+                  <XCircle className="w-4 h-4 flex-shrink-0" />
                   {error}
                 </div>
               )}
+
+              {/* 검색 버튼 */}
+              <Button
+                onClick={handleSearch}
+                disabled={loading}
+                size="lg"
+                className="w-full mt-2"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                    검색중...
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-5 h-5 mr-2" />
+                    예약 조회하기
+                  </>
+                )}
+              </Button>
             </CardContent>
           </Card>
 
@@ -396,75 +396,112 @@ export default function ProgressView() {
                 </div>
 
                 {/* Mobile Cards */}
-                <div className="md:hidden space-y-4">
+                <div className="md:hidden space-y-3">
                   {visitRequests.map((request, index) => {
                     const statusConfig = STATUS_CONFIG[request.status] || STATUS_CONFIG.REQUESTED;
                     const canCancelVisit = canCancel(request.visit_date);
-                    
+
                     return (
-                      <Card key={request.id} className="border">
-                        <CardContent className="p-4 space-y-3">
-                          <div className="flex items-start justify-between">
+                      <Card
+                        key={request.id}
+                        className="border overflow-hidden"
+                        onClick={() => {
+                          setSelectedRequest(request);
+                          setDetailDialogOpen(true);
+                        }}
+                      >
+                        <CardContent className="p-0">
+                          {/* Header */}
+                          <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
-                              <Badge className={`${statusConfig.bgColor} ${statusConfig.color} border-0`}>
+                              <span className="text-sm font-medium text-muted-foreground">
+                                #{index + 1}
+                              </span>
+                              <Badge
+                                className={`${statusConfig.bgColor} ${statusConfig.color} border-0`}
+                              >
                                 {statusConfig.label}
                               </Badge>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedRequest(request);
-                                setDetailDialogOpen(true);
-                              }}
-                              className="h-8 w-8 p-0"
-                              title="상세보기"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
+                            <span className="font-mono text-sm font-medium text-muted-foreground">
+                              {request.reservation_number}
+                            </span>
                           </div>
-                          
-                          <div className="space-y-2 text-sm">
-                            <div>
-                              <span className="text-muted-foreground">신청일: </span>
-                              <span>{formatDate(request.created_at)}</span>
+
+                          {/* Content */}
+                          <div className="p-4 space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <p className="font-semibold text-base">
+                                  {request.visitor_company || "-"}
+                                </p>
+                                <p className="text-sm text-muted-foreground mt-0.5">
+                                  {formatVisitorNames(request.visitor_info)}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <span className="text-muted-foreground">소속회사: </span>
-                              <span>{request.visitor_company || "-"}</span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">방문자명: </span>
-                              <span>{formatVisitorNames(request.visitor_info)}</span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">방문기간: </span>
-                              <span>
-                                {formatDate(request.visit_date)}
-                                {request.end_date && ` ~ ${formatDate(request.end_date)}`}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">방문목적: </span>
-                              <span>{request.purpose}</span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">담당자: </span>
-                              <span>{request.manager_name || "-"}</span>
+
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">방문기간</span>
+                                <p className="font-medium">
+                                  {formatDate(request.visit_date)}
+                                  {request.end_date && (
+                                    <>
+                                      <br />~ {formatDate(request.end_date)}
+                                    </>
+                                  )}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">방문목적</span>
+                                <p className="font-medium">{request.purpose}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">담당자</span>
+                                <p className="font-medium">
+                                  {request.manager_name || "-"}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">신청일</span>
+                                <p className="font-medium">
+                                  {formatDate(request.created_at)}
+                                </p>
+                              </div>
                             </div>
                           </div>
 
-                          <div className="pt-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleCancel(request.id, request.visit_date)}
-                              disabled={!canCancelVisit || request.status === "CANCELLED" || request.status === "COMPLETED"}
-                              className="w-full text-xs"
+                          {/* Action buttons */}
+                          <div className="flex border-t divide-x">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedRequest(request);
+                                setDetailDialogOpen(true);
+                              }}
+                              className="flex-1 py-3 px-4 text-sm font-medium text-center hover:bg-muted/50 active:bg-muted transition-colors touch-manipulation"
                             >
-                              취소
-                            </Button>
+                              <Eye className="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
+                              상세보기
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCancel(request.id, request.visit_date);
+                              }}
+                              disabled={
+                                !canCancelVisit ||
+                                request.status === "CANCELLED" ||
+                                request.status === "COMPLETED"
+                              }
+                              className="flex-1 py-3 px-4 text-sm font-medium text-center text-destructive hover:bg-destructive/5 active:bg-destructive/10 transition-colors touch-manipulation disabled:opacity-50 disabled:pointer-events-none"
+                            >
+                              <XCircle className="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
+                              예약취소
+                            </button>
                           </div>
                         </CardContent>
                       </Card>

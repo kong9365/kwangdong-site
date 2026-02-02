@@ -64,6 +64,21 @@ npm run test:supabase
 
 이 명령어는 Supabase 연결 상태와 데이터베이스 테이블 존재 여부를 확인합니다.
 
+### 5. Playwright 테스트 실행
+
+```sh
+# 기본 테스트 실행
+npm test
+
+# UI 모드로 실행 (추천)
+npm run test:ui
+
+# 디버그 모드로 실행
+npm run test:debug
+```
+
+Playwright Test Agents를 사용하여 AI 기반 테스트 자동화가 가능합니다. 자세한 내용은 [PLAYWRIGHT_AGENTS_GUIDE.md](./PLAYWRIGHT_AGENTS_GUIDE.md)를 참조하세요.
+
 **Edit a file directly in GitHub**
 
 - Navigate to the desired file(s).
@@ -95,6 +110,7 @@ npm run test:supabase
 - ✅ 공지사항 및 FAQ
 - ✅ 관리자 승인/반려 기능
 - ✅ 체크리스트 관리
+- ✅ Playwright Test Agents (AI 기반 테스트 자동화)
 
 ## 프로젝트 구조
 
@@ -132,6 +148,7 @@ npm run build
 ## 문서
 
 - [Supabase 설정 가이드](./SUPABASE_SETUP_GUIDE.md) - Supabase 연결 및 데이터베이스 설정 방법
+- [Playwright Test Agents 가이드](./PLAYWRIGHT_AGENTS_GUIDE.md) - AI 기반 테스트 자동화 사용 방법
 
 ## 문제 해결
 

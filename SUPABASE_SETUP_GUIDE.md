@@ -656,14 +656,19 @@ WHERE user_id = '사용자_UUID' AND role = 'admin';
 2. `.env` 파일의 키가 정확히 복사되었는지 확인합니다 (앞뒤 공백 없음).
 3. **anon/public key**를 사용하는지 확인합니다 (service_role key가 아님).
 
-#### 문제: "Failed to fetch" 오류
+#### 문제: "Failed to fetch" / "TypeError: fetch failed" 오류
 
-**원인**: 네트워크 문제이거나 Supabase 프로젝트가 일시 중지되었을 수 있습니다.
+**원인**: Supabase 프로젝트 일시중지(가장 흔함), 네트워크 문제, 방화벽 차단 등.
 
-**해결 방법**:
-1. 인터넷 연결을 확인합니다.
-2. Supabase 대시보드에서 프로젝트 상태를 확인합니다.
-3. 브라우저 개발자 도구의 Network 탭에서 실제 오류를 확인합니다.
+**해결 방법** (우선순위):
+1. **프로젝트 일시중지 확인** (무료 플랜: 7일 미사용 시 자동 일시중지)
+   - [Supabase 대시보드](https://supabase.com/dashboard/project/esrvexhyrpwwyjpjeuqi) 접속
+   - **Settings** → **General** → **Restore project** 클릭
+   - 복구 완료까지 수 분 소요 (이메일 알림 발송)
+2. 인터넷 연결을 확인합니다.
+3. 방화벽/백신에서 `*.supabase.co` 차단 여부를 확인합니다.
+4. VPN 사용 중이면 해제 후 재시도합니다.
+5. 브라우저 개발자 도구(F12) → Network 탭에서 실제 오류를 확인합니다.
 
 #### 문제: "relation does not exist" 오류
 

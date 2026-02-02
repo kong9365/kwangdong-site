@@ -29,5 +29,5 @@ export interface VisitRequest {
   visitorName: string;
   purpose: string;
   date: string;
-  status: "WAIT" | "APPROVED" | "REJECTED";
+  status: "REQUESTED" | "APPROVED" | "REJECTED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 }

@@ -11,14 +11,15 @@
     "preview": "vite preview",
     "test:supabase": "node test-supabase-connection.js",
     "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "test:debug": "playwright test --debug",
     "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:headed": "playwright test --headed",
     "test:chromium": "playwright test --project=chromium",
     "test:firefox": "playwright test --project=firefox",
     "test:webkit": "playwright test --project=webkit",
     "test:report": "playwright show-report",
-    "test:codegen": "playwright codegen https://kwangdong-site.vercel.app/"
+    "test:codegen": "playwright codegen https://kwangdong-site.vercel.app/",
+    "test:agents": "playwright init-agents --loop=vscode"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -76,7 +77,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
-    "@playwright/test": "^1.49.0",
+    "@playwright/test": "^1.57.0",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^22.16.5",
     "@types/react": "^18.3.23",

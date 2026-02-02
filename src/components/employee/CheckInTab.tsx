@@ -26,12 +26,31 @@ interface QRData {
   department: string;
 }
 
+interface VisitorInfo {
+  id: string;
+  visitor_name: string;
+  visitor_phone: string;
+  car_number?: string | null;
+  visitor_email?: string | null;
+}
+
+interface CheckInVisitRequest {
+  id: string;
+  reservation_number: string;
+  visit_date: string;
+  purpose: string;
+  status: string;
+  manager_name?: string | null;
+  checked_in_at?: string | null;
+  visitor_info?: VisitorInfo[];
+}
+
 export function CheckInTab() {
   const navigate = useNavigate();
   const { toast } = useToast();
   
   const [qrCode, setQrCode] = useState<string>("");
-  const [visitRequest, setVisitRequest] = useState<any>(null);
+  const [visitRequest, setVisitRequest] = useState<CheckInVisitRequest | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkingIn, setCheckingIn] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
@@ -40,28 +59,44 @@ export function CheckInTab() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const scannerRef = useRef<any>(null);
+  const isMountedRef = useRef<boolean>(true);
 
   // 카메라 시작
   const startCamera = async () => {
     setCameraActive(true);
-    
+
     // 다이얼로그가 열린 후 카메라 초기화
     setTimeout(async () => {
+      // 컴포넌트가 언마운트된 경우 중단
+      if (!isMountedRef.current) return;
+
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "environment" }, // 후면 카메라 우선
         });
-        
+
+        // 스트림 획득 후 컴포넌트가 언마운트된 경우 정리
+        if (!isMountedRef.current) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           streamRef.current = stream;
-          
+
           // QR 코드 스캔 라이브러리 로드 (동적 import)
           try {
             const { BrowserQRCodeReader } = await import("@zxing/library");
+
+            // 라이브러리 로드 후 컴포넌트가 언마운트된 경우 중단
+            if (!isMountedRef.current) return;
+
             const codeReader = new BrowserQRCodeReader();
-            
+
             codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, err) => {
+              if (!isMountedRef.current) return;
+
               if (result) {
                 const scannedText = result.getText();
                 stopCamera();
@@ -71,25 +106,29 @@ export function CheckInTab() {
                 console.error("QR 코드 스캔 오류:", err);
               }
             });
-            
+
             scannerRef.current = codeReader;
           } catch (importError) {
             console.error("QR 코드 라이브러리 로드 실패:", importError);
-            toast({
-              title: "QR 코드 스캔 기능을 사용할 수 없습니다",
-              description: "수동으로 QR 코드를 입력해주세요.",
-              variant: "destructive",
-            });
+            if (isMountedRef.current) {
+              toast({
+                title: "QR 코드 스캔 기능을 사용할 수 없습니다",
+                description: "수동으로 QR 코드를 입력해주세요.",
+                variant: "destructive",
+              });
+            }
           }
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("카메라 접근 실패:", err);
-        setCameraActive(false);
-        toast({
-          title: "카메라 접근 실패",
-          description: "카메라 권한이 필요합니다.",
-          variant: "destructive",
-        });
+        if (isMountedRef.current) {
+          setCameraActive(false);
+          toast({
+            title: "카메라 접근 실패",
+            description: "카메라 권한이 필요합니다.",
+            variant: "destructive",
+          });
+        }
       }
     }, 100);
   };
@@ -129,14 +168,15 @@ export function CheckInTab() {
 
     try {
       const { qrData, visitRequest: request } = await getVisitRequestByQRCodeId(qrCodeId);
-      setVisitRequest(request);
+      setVisitRequest(request as CheckInVisitRequest);
       setQrCode(qrCodeId);
-    } catch (err: any) {
-      setError(err.message || "QR 코드 조회 실패");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "QR 코드 조회 실패";
+      setError(errorMessage);
       setVisitRequest(null);
       toast({
         title: "QR 코드 오류",
-        description: err.message || "QR 코드를 확인할 수 없습니다.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -156,14 +196,15 @@ export function CheckInTab() {
 
     try {
       const { qrData, visitRequest: request } = await decodeQRCode(code);
-      setVisitRequest(request);
+      setVisitRequest(request as CheckInVisitRequest);
       setQrCode(code);
-    } catch (err: any) {
-      setError(err.message || "QR 코드 디코딩 실패");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "QR 코드 디코딩 실패";
+      setError(errorMessage);
       setVisitRequest(null);
       toast({
         title: "QR 코드 오류",
-        description: err.message || "QR 코드를 확인할 수 없습니다.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -241,10 +282,11 @@ export function CheckInTab() {
       setVisitRequest(null);
       setQrCode("");
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "체크인 처리 중 오류가 발생했습니다.";
       toast({
         title: "체크인 실패",
-        description: err.message || "체크인 처리 중 오류가 발생했습니다.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -254,7 +296,9 @@ export function CheckInTab() {
 
   // 컴포넌트 언마운트 시 카메라 정리
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
+      isMountedRef.current = false;
       stopCamera();
     };
   }, []);

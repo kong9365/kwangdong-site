@@ -7,7 +7,40 @@ interface ProgressPageProps {
 }
 
 export function ProgressPage({ visit, checklist }: ProgressPageProps) {
-  const activeStepIndex = 2;
+  // 체크리스트 완료 여부 확인
+  const isChecklistComplete = checklist.security && checklist.safety && checklist.privacy && checklist.upload;
+
+  // 상태에 따른 진행 단계 계산
+  const calculateActiveStepIndex = (): number => {
+    const status = visit.status?.toUpperCase();
+
+    // 완료 또는 진행중 상태
+    if (status === "COMPLETED" || status === "IN_PROGRESS") {
+      return 4; // 방문 확정
+    }
+
+    // 승인된 상태
+    if (status === "APPROVED") {
+      if (isChecklistComplete) {
+        return 3; // 교육/보안 동의 완료
+      }
+      return 2; // 방문자 정보 입력 단계
+    }
+
+    // 요청 상태
+    if (status === "REQUESTED") {
+      return 0; // 방문 요청 단계
+    }
+
+    // 거부 또는 취소 상태
+    if (status === "REJECTED" || status === "CANCELLED") {
+      return 0;
+    }
+
+    return 0; // 기본값
+  };
+
+  const activeStepIndex = calculateActiveStepIndex();
 
   const steps = [
     "1) 방문 요청",

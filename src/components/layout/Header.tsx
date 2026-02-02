@@ -79,26 +79,26 @@ export function Header() {
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <button
-                className="md:hidden p-2 rounded-md text-foreground hover:bg-muted transition-colors"
+                className="md:hidden p-3 -mr-2 rounded-lg text-foreground hover:bg-muted active:bg-muted/80 transition-colors touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="메뉴 열기"
               >
                 <Menu className="h-6 w-6" />
               </button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] sm:w-[320px]">
+            <SheetContent side="right" className="w-[300px] sm:w-[340px]">
               <SheetHeader>
-                <SheetTitle className="text-left">메뉴</SheetTitle>
+                <SheetTitle className="text-left text-lg">메뉴</SheetTitle>
               </SheetHeader>
-              <nav className="flex flex-col space-y-4 mt-8">
+              <nav className="flex flex-col space-y-2 mt-6">
                 {navigationItems.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
                     onClick={handleLinkClick}
-                    className={`text-base font-medium transition-colors py-2 px-3 rounded-md ${
+                    className={`text-base font-medium transition-colors py-4 px-4 rounded-xl touch-manipulation active:scale-[0.98] ${
                       isActive(item.path)
                         ? "text-primary bg-primary/10"
-                        : "text-foreground hover:bg-muted"
+                        : "text-foreground hover:bg-muted active:bg-muted/80"
                     }`}
                   >
                     {item.label}
@@ -108,10 +108,10 @@ export function Header() {
                   <Link
                     to="/employee"
                     onClick={handleLinkClick}
-                    className={`text-base font-medium transition-colors py-2 px-3 rounded-md block ${
+                    className={`text-base font-medium transition-colors py-4 px-4 rounded-xl block touch-manipulation active:scale-[0.98] ${
                       isActive("/employee") || isActive("/admin/approval")
                         ? "text-primary bg-primary/10"
-                        : "text-muted-foreground hover:bg-muted"
+                        : "text-muted-foreground hover:bg-muted active:bg-muted/80"
                     }`}
                   >
                     임직원모드

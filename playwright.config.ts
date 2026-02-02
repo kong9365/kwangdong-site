@@ -54,6 +54,7 @@ export default defineConfig({
     timezoneId: 'Asia/Seoul',
   },
 
+  /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
@@ -89,8 +90,8 @@ export default defineConfig({
 
   // Web Server configuration (if testing local dev server)
   // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
+  //   command: 'npm run dev',
+  //   url: 'http://localhost:5173',
   //   reuseExistingServer: !process.env.CI,
   // },
 });
