@@ -55,17 +55,24 @@ export async function searchVisitRequestByReservationNumber(
   return data;
 }
 
-// 방문자명, 전화번호, 예약번호로 방문 요청 검색 (3개 필드 모두 필요)
+// 전화번호 정규화: 숫자만 추출 (하이픈·공백 제거)
+function normalizePhone(phone: string): string {
+  return (phone || "").replace(/\D/g, "");
+}
+
+// 방문자명, 전화번호, 예약번호로 방문 요청 검색 (추가 방문자 포함 모든 방문자 조회 가능)
 export async function searchVisitRequests(
   visitorName: string,
   phone: string,
   reservationNumber: string
 ) {
-  // 전화번호 정규화 (하이픈 제거)
-  const normalizedPhone = phone.replace(/-/g, "");
-  
-  // 방문자명은 정확 일치
-  // 전화번호와 예약번호로 먼저 visit_requests를 필터링
+  const normalizedPhone = normalizePhone(phone);
+  const trimmedName = (visitorName || "").trim();
+
+  if (!trimmedName || !normalizedPhone) {
+    return [];
+  }
+
   const { data: visitRequests, error: visitError } = await supabase
     .from("visit_requests")
     .select(`
@@ -73,21 +80,22 @@ export async function searchVisitRequests(
       visitor_info (*),
       checklists (*)
     `)
-    .eq("reservation_number", reservationNumber);
+    .eq("reservation_number", reservationNumber.trim());
 
   if (visitError) throw visitError;
   if (!visitRequests || visitRequests.length === 0) {
     return [];
   }
 
-  // 방문자 정보에서 이름과 전화번호로 필터링
+  // 방문자 정보에서 이름·전화번호 일치 검사 (1번, 2번, 3번... 추가된 모든 방문자 포함)
   const filtered = visitRequests.filter((vr: any) => {
-    if (!vr.visitor_info || vr.visitor_info.length === 0) return false;
-    
-    return vr.visitor_info.some((visitor: any) => {
-      const nameMatch = visitor.visitor_name === visitorName;
-      const phoneMatch = visitor.visitor_phone === normalizedPhone;
-      return nameMatch && phoneMatch;
+    const infos = vr.visitor_info;
+    if (!Array.isArray(infos) || infos.length === 0) return false;
+
+    return infos.some((visitor: any) => {
+      const vName = (visitor?.visitor_name || "").trim();
+      const vPhone = normalizePhone(visitor?.visitor_phone || "");
+      return vName === trimmedName && vPhone === normalizedPhone;
     });
   });
 
@@ -218,8 +226,8 @@ export async function createVisitRequest(
   if (request.visitors && request.visitors.length > 0) {
     const visitorInserts = request.visitors.map((visitor) => ({
       visit_request_id: visitRequest.id,
-      visitor_name: visitor.name,
-      visitor_phone: visitor.phone.replace(/-/g, ""),
+      visitor_name: (visitor.name || "").trim(),
+      visitor_phone: normalizePhone(visitor.phone),
       car_number: visitor.carNumber || null,
       visitor_email: visitor.email || null,
     }));

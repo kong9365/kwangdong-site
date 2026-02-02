@@ -10,6 +10,7 @@ import ReservationComplete from "./pages/ReservationComplete";
 import Index from "./pages/Index";
 import ProgressView from "./pages/ProgressView";
 import VisitCheckIn from "./pages/VisitCheckIn";
+import QrDisplay from "./pages/QrDisplay";
 import AdminApproval from "./pages/AdminApproval";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import { Navigate } from "react-router-dom";
@@ -32,9 +33,10 @@ const App = () => (
           <Route path="/reservation/complete" element={<ReservationComplete />} />
           <Route path="/progress" element={<ProgressView />} />
           <Route path="/progress/view" element={<ProgressView />} />
-          {/* 기존 방문수속 경로는 임직원모드로 리다이렉트 */}
+          {/* 방문수속 경로는 임직원모드로 리다이렉트 */}
           <Route path="/visit/checkin" element={<Navigate to="/employee?tab=checkin" replace />} />
-          <Route path="/qr/:id" element={<Navigate to="/employee?tab=checkin" replace />} />
+          {/* QR 전용 페이지: 방문객이 문자 링크 클릭 시 QR 코드 표시 (한미약품 방식) */}
+          <Route path="/qr/:id" element={<QrDisplay />} />
           <Route path="/employee" element={<EmployeeDashboard />} />
           <Route path="/admin/approval" element={<AdminApproval />} />
           <Route path="/notice" element={<Notice />} />

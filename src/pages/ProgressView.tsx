@@ -200,7 +200,7 @@ export default function ProgressView() {
             <CardHeader className="pb-4">
               <CardTitle className="text-lg sm:text-xl">예약 조회</CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                방문자 정보를 입력하여 예약 현황을 조회하세요
+                방문자 정보를 입력하여 예약 현황을 조회하세요. (추가된 방문자도 본인 정보로 조회 가능)
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -522,6 +522,7 @@ export default function ProgressView() {
                   <div className="text-muted-foreground space-y-2">
                     <p className="text-lg font-medium">검색 결과가 없습니다</p>
                     <p className="text-sm">방문자명, 전화번호, 예약번호를 모두 입력하고 검색해주세요.</p>
+                    <p className="text-xs">예약에 추가된 2번째, 3번째 방문자도 본인 이름과 전화번호로 조회할 수 있습니다.</p>
                     <p className="text-xs">예약번호는 5자리 숫자입니다.</p>
                   </div>
                 </div>
