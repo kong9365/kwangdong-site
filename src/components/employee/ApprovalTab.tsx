@@ -49,6 +49,7 @@ interface VisitRequest {
   manager_phone?: string | null;
   created_at: string;
   checked_in_at?: string | null;
+  checked_out_at?: string | null;
   qr_code_url?: string | null;
   visitor_info?: Array<{
     visitor_name: string;
@@ -337,6 +338,7 @@ export function ApprovalTab() {
                     <TableHead>담당자</TableHead>
                     <TableHead>상태</TableHead>
                     <TableHead>체크인 시간</TableHead>
+                    <TableHead>체크아웃 시간</TableHead>
                     <TableHead className="text-center">작업</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -372,6 +374,15 @@ export function ApprovalTab() {
                         {request.checked_in_at ? (
                           <span className="text-sm text-green-600 font-medium">
                             {formatDateTime(request.checked_in_at)}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {request.checked_out_at ? (
+                          <span className="text-sm text-purple-600 font-medium">
+                            {formatDateTime(request.checked_out_at)}
                           </span>
                         ) : (
                           <span className="text-sm text-muted-foreground">-</span>
@@ -472,6 +483,16 @@ export function ApprovalTab() {
                           {request.checked_in_at ? (
                             <p className="text-green-600 font-medium text-xs">
                               {formatDateTime(request.checked_in_at)}
+                            </p>
+                          ) : (
+                            <p className="text-muted-foreground">-</p>
+                          )}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">체크아웃</span>
+                          {request.checked_out_at ? (
+                            <p className="text-purple-600 font-medium text-xs">
+                              {formatDateTime(request.checked_out_at)}
                             </p>
                           ) : (
                             <p className="text-muted-foreground">-</p>
@@ -606,6 +627,16 @@ export function ApprovalTab() {
                       </p>
                       <p className="text-green-600 font-medium">
                         {formatDateTime(selectedRequest.checked_in_at)}
+                      </p>
+                    </div>
+                  )}
+                  {selectedRequest.checked_out_at && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        체크아웃 시간
+                      </p>
+                      <p className="text-purple-600 font-medium">
+                        {formatDateTime(selectedRequest.checked_out_at)}
                       </p>
                     </div>
                   )}

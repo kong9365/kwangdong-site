@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { PrivacyPolicyContent } from "@/content/PrivacyPolicyContent";
 
 export function Footer() {
   const [termsOpen, setTermsOpen] = useState(false);
@@ -71,7 +72,7 @@ export function Footer() {
                 <strong>제1조(목적 등)</strong>
               </p>
               <p>
-                1. 본 약관은 광동사이언스 주식회사(이하 "회사"라 합니다)가 방문예약 신청 홈페이지를 통하여 제공하는 방문예약 관련 서비스 (이하 "서비스"라 합니다)를 사용자가 이용함에 있어 사용자와 "회사"의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.
+                1. 본 약관은 광동제약(이하 "회사"라 합니다)가 방문예약 신청 홈페이지를 통하여 제공하는 방문예약 관련 서비스 (이하 "서비스"라 합니다)를 사용자가 이용함에 있어 사용자와 "회사"의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.
               </p>
               <p>
                 2. 본 약관에 정하는 이외의 "사용자"와 "회사"의 권리, 의무 및 책임사항에 관해서는 개인정보보호법 및 개인정보보호에 관한 제반 법령, 산업안전보호법 및 기타 관련 법령에 따릅니다.
@@ -151,106 +152,10 @@ export function Footer() {
       <Dialog open={privacyOpen} onOpenChange={setPrivacyOpen}>
         <DialogContent className="max-w-3xl w-[95vw] sm:w-full max-h-[80vh]">
           <DialogHeader>
-            <DialogTitle>개인정보 처리방침</DialogTitle>
+            <DialogTitle>광동제약㈜ 개인정보 처리방침</DialogTitle>
           </DialogHeader>
           <ScrollArea className="h-[60vh] pr-4">
-            <div className="text-sm space-y-4 text-foreground">
-              <p>
-                <strong>1. 개인정보 처리 목적 및 수집 항목</strong>
-              </p>
-              <p>
-                광동사이언스 주식회사는 방문예약 서비스의 운영을 위해 필요한 최소한의 범위 내에서 다음과 같이 개인정보를 처리합니다.
-              </p>
-
-              <table className="w-full border-collapse border border-border mt-4">
-                <thead>
-                  <tr className="bg-muted">
-                    <th className="border border-border p-2 text-left">서비스</th>
-                    <th className="border border-border p-2 text-left">목적</th>
-                    <th className="border border-border p-2 text-left">수집항목</th>
-                    <th className="border border-border p-2 text-left">보유 및 이용 기간</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="border border-border p-2">방문자 예약정보시스템</td>
-                    <td className="border border-border p-2">서비스 운영 및 제공</td>
-                    <td className="border border-border p-2">
-                      성명, 연락처, 소속사명, 방문 이력(방문날짜, 장소 등)
-                    </td>
-                    <td className="border border-border p-2">
-                      최근 방문일 기준 방문 종료 후 1년간
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <p className="mt-4">
-                <strong>2. 개인정보의 보유 및 이용기간</strong>
-              </p>
-              <p>
-                회사는 법령에 따른 개인정보 보유·이용기간 또는 정보주체로부터 개인정보를 수집 시에 동의 받은 개인정보 보유·이용기간 내에서 개인정보를 처리·보유합니다.
-              </p>
-              <p>
-                출입 기록 관리 및 내부정책에 따라 정보주체로부터 개인정보를 수집 시에 동의 받은 개인정보 보유·이용기간(최근 방문일 기준 방문 종료 후 1년간) 내에서 개인정보를 처리·보유합니다.
-              </p>
-
-              <p>
-                <strong>3. 개인정보의 제3자 제공</strong>
-              </p>
-              <p>
-                회사는 정보주체의 개인정보를 개인정보의 처리 목적에서 명시한 범위 내에서만 처리하며, 정보주체의 동의, 법률의 특별한 규정 등 「개인정보 보호법」 제17조 및 제18조에 해당하는 경우에만 개인정보를 제3자에게 제공합니다.
-              </p>
-
-              <p>
-                <strong>4. 개인정보의 파기</strong>
-              </p>
-              <p>
-                회사는 개인정보 보유기간의 경과, 처리목적 달성 등 개인정보가 불필요하게 되었을 때에는 지체없이 해당 개인정보를 파기합니다.
-              </p>
-              <p>
-                전자적 파일 형태로 기록·저장된 개인정보는 기록을 재생할 수 없도록 파기하며, 종이 문서에 기록·저장된 개인정보는 분쇄기로 분쇄하거나 소각하여 파기합니다.
-              </p>
-
-              <p>
-                <strong>5. 정보주체의 권리·의무</strong>
-              </p>
-              <p>
-                정보주체는 회사에 대해 언제든지 개인정보 열람·정정·삭제·처리정지요구 등의 권리를 행사할 수 있습니다.
-              </p>
-              <p>
-                권리 행사는 회사에 대해 「개인정보 보호법」 시행령 제41조 제1항에 따라 서면, 전자우편 등을 통하여 하실 수 있으며, 회사는 이에 대해 지체없이 조치하겠습니다.
-              </p>
-
-              <p>
-                <strong>6. 개인정보 안전성 확보조치</strong>
-              </p>
-              <p>
-                회사는 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다.
-              </p>
-              <p>
-                • 관리적 조치: 내부관리계획 수립·시행, 전담조직 운영, 정기적 직원 교육
-                <br />
-                • 기술적 조치: 개인정보처리시스템 등의 접근권한 관리, 접근통제시스템 설치, 개인정보의 암호화, 보안프로그램 설치 및 갱신
-                <br />
-                • 물리적 조치: 전산실, 자료보관실 등의 접근통제
-              </p>
-
-              <p>
-                <strong>7. 개인정보 보호책임자</strong>
-              </p>
-              <p>
-                개인정보 보호책임자: 정보보호팀장
-                <br />
-                연락처: 02-410-9181
-                <br />
-                이메일: security@kwangdong.co.kr
-              </p>
-
-              <p className="mt-6">
-                정보주체는 개인정보침해로 인한 구제를 받기 위하여 개인정보분쟁조정위원회, 한국인터넷진흥원 개인정보침해신고센터 등에 분쟁해결이나 상담 등을 신청할 수 있습니다.
-              </p>
-            </div>
+            <PrivacyPolicyContent />
           </ScrollArea>
           <div className="flex justify-end mt-4">
             <Button onClick={() => setPrivacyOpen(false)}>닫기</Button>

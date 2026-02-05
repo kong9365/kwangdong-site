@@ -486,9 +486,6 @@ export default function ReservationForm() {
                         className="max-w-md bg-muted"
                         readOnly
                       />
-                      <span className="text-xs text-muted-foreground">
-                        (변경 시 첫 화면에서 다시 선택)
-                      </span>
                     </div>
                   </div>
 
@@ -703,10 +700,10 @@ export default function ReservationForm() {
                         <th className="p-3 text-left text-sm font-medium">
                           차량번호
                         </th>
-                        <th className="p-3 text-center text-sm font-medium">
+                        <th className="p-3 text-center text-sm font-medium whitespace-nowrap">
                           개인정보 수집 동의
                         </th>
-                        <th className="p-3 text-center text-sm font-medium">
+                        <th className="p-3 text-center text-sm font-medium whitespace-nowrap">
                           안전보건 지침 동의
                         </th>
                         <th className="p-3 text-center text-sm font-medium">
@@ -928,7 +925,7 @@ export default function ReservationForm() {
                             }
                             className="h-5 w-5"
                           />
-                          <span className="text-sm flex-1">개인정보 수집 동의 (선택)</span>
+                          <span className="text-sm flex-1 whitespace-nowrap">개인정보 수집 동의 (선택)</span>
                         </label>
                         <label className="flex items-center gap-3 p-3 -mx-3 rounded-lg tap-highlight cursor-pointer">
                           <Checkbox
@@ -938,7 +935,7 @@ export default function ReservationForm() {
                             }
                             className="h-5 w-5"
                           />
-                          <span className="text-sm flex-1">
+                          <span className="text-sm flex-1 whitespace-nowrap">
                             안전보건 지침 동의 <span className="text-destructive">*</span>
                           </span>
                         </label>

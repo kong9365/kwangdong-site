@@ -116,6 +116,8 @@ export type Database = {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          checked_in_at: string | null
+          checked_out_at: string | null
           company: string
           created_at: string | null
           department: string
@@ -131,6 +133,8 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          checked_in_at?: string | null
+          checked_out_at?: string | null
           company: string
           created_at?: string | null
           department: string
@@ -146,6 +150,8 @@ export type Database = {
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          checked_in_at?: string | null
+          checked_out_at?: string | null
           company?: string
           created_at?: string | null
           department?: string

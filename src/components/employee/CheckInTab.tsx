@@ -10,9 +10,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CheckCircle2, XCircle, Camera, Loader2, QrCode, Link, X } from "lucide-react";
+import { CheckCircle2, XCircle, Camera, Loader2, QrCode, Link, X, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { decodeQRCode, checkInVisit, getVisitRequestByQRCodeId } from "@/lib/api";
+import { decodeQRCode, checkInVisit, checkOutVisit, getVisitRequestByQRCodeId } from "@/lib/api";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 
@@ -42,6 +42,7 @@ interface CheckInVisitRequest {
   status: string;
   manager_name?: string | null;
   checked_in_at?: string | null;
+  checked_out_at?: string | null;
   visitor_info?: VisitorInfo[];
 }
 
@@ -266,7 +267,7 @@ export function CheckInTab() {
     }
   };
 
-  // 체크인 처리
+  // 체크인 처리 (출입)
   const handleCheckIn = async () => {
     if (!visitRequest) return;
 
@@ -274,18 +275,43 @@ export function CheckInTab() {
     try {
       await checkInVisit(visitRequest.reservation_number);
       toast({
-        title: "체크인 완료",
-        description: "방문 수속이 완료되었습니다.",
+        title: "출입 처리 완료",
+        description: "방문자가 출입했습니다.",
       });
-      
-      // 예약 정보 초기화 및 새로고침
+      // 예약 정보 초기화
       setVisitRequest(null);
       setQrCode("");
       setError(null);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "체크인 처리 중 오류가 발생했습니다.";
+      const errorMessage = err instanceof Error ? err.message : "출입 처리 중 오류가 발생했습니다.";
       toast({
-        title: "체크인 실패",
+        title: "출입 처리 실패",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setCheckingIn(false);
+    }
+  };
+
+  // 체크아웃 처리 (퇴실)
+  const handleCheckOut = async () => {
+    if (!visitRequest) return;
+
+    setCheckingIn(true);
+    try {
+      await checkOutVisit(visitRequest.reservation_number);
+      toast({
+        title: "퇴실 처리 완료",
+        description: "방문자가 퇴실했습니다.",
+      });
+      setVisitRequest(null);
+      setQrCode("");
+      setError(null);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "퇴실 처리 중 오류가 발생했습니다.";
+      toast({
+        title: "퇴실 처리 실패",
         description: errorMessage,
         variant: "destructive",
       });
@@ -416,36 +442,69 @@ export function CheckInTab() {
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground mb-1">상태</div>
-                  <Badge variant="secondary">{visitRequest.status}</Badge>
+                  <Badge variant="secondary">
+                    {visitRequest.status === "APPROVED" && "출입 대기"}
+                    {visitRequest.status === "IN_PROGRESS" && "방문 중"}
+                    {visitRequest.status === "COMPLETED" && "퇴실 완료"}
+                    {!["APPROVED", "IN_PROGRESS", "COMPLETED"].includes(visitRequest.status) && visitRequest.status}
+                  </Badge>
                 </div>
+                {visitRequest.checked_in_at && (
+                  <div>
+                    <div className="text-sm text-muted-foreground mb-1">출입 시간</div>
+                    <div className="font-medium">
+                      {format(new Date(visitRequest.checked_in_at), "yyyy-MM-dd HH:mm", { locale: ko })}
+                    </div>
+                  </div>
+                )}
+                {visitRequest.checked_out_at && (
+                  <div>
+                    <div className="text-sm text-muted-foreground mb-1">퇴실 시간</div>
+                    <div className="font-medium">
+                      {format(new Date(visitRequest.checked_out_at), "yyyy-MM-dd HH:mm", { locale: ko })}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {visitRequest.checked_in_at ? (
-                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                  <div className="flex items-center gap-2 text-green-700">
-                    <CheckCircle2 className="w-5 h-5" />
-                    <span className="font-medium">이미 체크인 완료되었습니다.</span>
-                  </div>
-                  <p className="text-sm text-green-600 mt-1">
-                    체크인 시간: {format(new Date(visitRequest.checked_in_at), "yyyy-MM-dd HH:mm", { locale: ko })}
-                  </p>
-                </div>
-              ) : (
+              {visitRequest.status === "APPROVED" && (
                 <Button
                   onClick={handleCheckIn}
-                  disabled={checkingIn || visitRequest.status !== "APPROVED"}
+                  disabled={checkingIn}
                   className="w-full"
                   size="lg"
                 >
                   {checkingIn ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      체크인 중...
+                      출입 처리 중...
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4 mr-2" />
-                      방문 체크인
+                      출입 처리
+                    </>
+                  )}
+                </Button>
+              )}
+
+              {visitRequest.status === "IN_PROGRESS" && (
+                <Button
+                  onClick={handleCheckOut}
+                  disabled={checkingIn}
+                  className="w-full"
+                  size="lg"
+                  variant="secondary"
+                >
+                  {checkingIn ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      퇴실 처리 중...
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      퇴실 처리
                     </>
                   )}
                 </Button>

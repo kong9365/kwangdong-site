@@ -411,8 +411,9 @@ export async function getVisitRequestByQRCodeId(qrCodeId: string) {
     throw new Error("예약 정보를 찾을 수 없습니다.");
   }
   
-  if (!visitRequest || visitRequest.status !== "APPROVED") {
-    throw new Error("승인되지 않은 예약이거나 유효하지 않은 QR 코드입니다.");
+  // APPROVED(체크인 대기), IN_PROGRESS(체크아웃 대기) 상태만 QR 조회 허용
+  if (!visitRequest || !["APPROVED", "IN_PROGRESS"].includes(visitRequest.status)) {
+    throw new Error("승인되지 않았거나 이미 퇴실 처리된 예약입니다.");
   }
   
   // QR 코드 데이터 생성 (하위 호환성)
@@ -461,12 +462,29 @@ export async function decodeQRCode(encryptedData: string) {
   }
 }
 
-// 방문 체크인 처리
+// 방문 체크인 처리 (출입 시간 기록, 상태: IN_PROGRESS)
 export async function checkInVisit(reservationNumber: string) {
   const { data, error } = await supabase
     .from("visit_requests")
     .update({
       checked_in_at: new Date().toISOString(),
+      status: "IN_PROGRESS",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("reservation_number", reservationNumber)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// 방문 체크아웃 처리 (퇴실 시간 기록, 상태: COMPLETED)
+export async function checkOutVisit(reservationNumber: string) {
+  const { data, error } = await supabase
+    .from("visit_requests")
+    .update({
+      checked_out_at: new Date().toISOString(),
       status: "COMPLETED",
       updated_at: new Date().toISOString(),
     })
