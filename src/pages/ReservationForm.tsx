@@ -42,6 +42,7 @@ import {
   validateReservationFlow,
   setFormStarted,
   clearReservationFlowState,
+  getReservationFlowState,
 } from "@/lib/reservationFlow";
 import { createVisitRequest, sendSMSNotification } from "@/lib/api";
 import {
@@ -141,6 +142,10 @@ export default function ReservationForm() {
   const [hasShownVisitorAddConsent, setHasShownVisitorAddConsent] = useState(false);
   const [isFormDirty, setIsFormDirty] = useState(false);
 
+  // 방문공장 정보 (플로우에서 가져옴)
+  const [factoryCode, setFactoryCode] = useState<string | null>(null);
+  const [factoryLabel, setFactoryLabel] = useState<string | null>(null);
+
   // 플로우 유효성 검사 - 공장 선택 및 약관 동의 확인
   useEffect(() => {
     const validation = validateReservationFlow();
@@ -153,6 +158,10 @@ export default function ReservationForm() {
       navigate(validation.redirectTo, { replace: true });
     } else {
       setFormStarted();
+      // 공장 정보 가져오기
+      const flowState = getReservationFlowState();
+      setFactoryCode(flowState.factory);
+      setFactoryLabel(flowState.factoryLabel);
     }
   }, [navigate, toast]);
 
@@ -317,6 +326,7 @@ export default function ReservationForm() {
         requester_id: null, // 비로그인 공개 예약 (로그인 구현 시 supabase.auth.getUser()로 설정)
         manager_name: selectedManager?.name || values.manager || null,
         manager_phone: selectedManager?.phone || null,
+        factory: factoryCode, // 방문공장 (통계용)
         visitors: visitors.map((v) => ({
           name: v.name,
           phone: v.phone1 + v.phone2 + v.phone3,
@@ -466,6 +476,22 @@ export default function ReservationForm() {
               <div className="bg-card rounded-lg shadow p-6">
                 <h3 className="text-lg font-bold mb-6">담당자 정보</h3>
                 <div className="space-y-4">
+                  {/* 방문공장 (읽기전용 - 홈에서 선택한 값 표시) */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">방문공장</label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={factoryLabel || ""}
+                        placeholder="공장 정보 없음"
+                        className="max-w-md bg-muted"
+                        readOnly
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        (변경 시 첫 화면에서 다시 선택)
+                      </span>
+                    </div>
+                  </div>
+
                   <FormField
                     control={form.control}
                     name="manager"

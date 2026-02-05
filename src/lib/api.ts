@@ -188,6 +188,7 @@ export async function getManagerById(managerId: string): Promise<Manager | null>
 export async function createVisitRequest(
   request: VisitRequestInsert & {
     end_date?: string | null;
+    factory?: string | null;
     visitors: Array<{
       name: string;
       phone: string;
@@ -214,6 +215,7 @@ export async function createVisitRequest(
       requester_id: request.requester_id,
       manager_name: request.manager_name || null,
       manager_phone: request.manager_phone || null,
+      factory: request.factory || null,
       reservation_number: reservationNumber,
       status: "REQUESTED",
     })

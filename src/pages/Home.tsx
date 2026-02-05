@@ -12,12 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { setSelectedFactory, clearReservationFlowState } from "@/lib/reservationFlow";
+import { setSelectedFactory, clearReservationFlowState, FACTORY_OPTIONS } from "@/lib/reservationFlow";
 
-const FACTORY_OPTIONS = [
-  { value: "GMP", label: "GMP공장" },
-  { value: "FOOD", label: "식품공장" },
-];
+// 공장 옵션을 배열 형태로 변환 (Select 컴포넌트용)
+const FACTORY_OPTIONS_LIST = Object.entries(FACTORY_OPTIONS).map(([value, label]) => ({
+  value,
+  label,
+}));
 
 export default function Home() {
   const [selectedFactoryState, setSelectedFactoryState] = useState("");
@@ -100,7 +101,7 @@ export default function Home() {
                         <SelectValue placeholder="공장을 선택하세요" />
                       </SelectTrigger>
                       <SelectContent>
-                        {FACTORY_OPTIONS.map((factory) => (
+                        {FACTORY_OPTIONS_LIST.map((factory) => (
                           <SelectItem
                             key={factory.value}
                             value={factory.value}

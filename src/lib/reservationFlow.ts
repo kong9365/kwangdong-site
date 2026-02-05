@@ -7,6 +7,7 @@ const STORAGE_KEY = "kwangdong_reservation_flow";
 
 export interface ReservationFlowState {
   factory: string | null;
+  factoryLabel: string | null;
   agreementCompleted: boolean;
   agreementTimestamp: number | null;
   formStarted: boolean;
@@ -14,9 +15,16 @@ export interface ReservationFlowState {
 
 const DEFAULT_STATE: ReservationFlowState = {
   factory: null,
+  factoryLabel: null,
   agreementCompleted: false,
   agreementTimestamp: null,
   formStarted: false,
+};
+
+// 공장 옵션 (Home.tsx와 동일하게 유지)
+export const FACTORY_OPTIONS: Record<string, string> = {
+  GMP: "GMP공장",
+  FOOD: "식품공장",
 };
 
 /**
@@ -51,6 +59,7 @@ export function getReservationFlowState(): ReservationFlowState {
 export function setSelectedFactory(factory: string): void {
   const state = getReservationFlowState();
   state.factory = factory;
+  state.factoryLabel = FACTORY_OPTIONS[factory] || factory;
   saveState(state);
 }
 

@@ -119,6 +119,7 @@ export type Database = {
           company: string
           created_at: string | null
           department: string
+          factory: string | null
           id: string
           purpose: string
           rejection_reason: string | null
@@ -133,6 +134,7 @@ export type Database = {
           company: string
           created_at?: string | null
           department: string
+          factory?: string | null
           id?: string
           purpose: string
           rejection_reason?: string | null
@@ -147,6 +149,7 @@ export type Database = {
           company?: string
           created_at?: string | null
           department?: string
+          factory?: string | null
           id?: string
           purpose?: string
           rejection_reason?: string | null
